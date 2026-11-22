@@ -1,5 +1,5 @@
 /* ============================================================
-   工程化增量样式：导航选中态动效 / 阶段轴 / 工序看板 / 权限抽屉
+   工程化增量样式：导航选中态动效 / 阶段轴
    ============================================================ */
 
 /* ------------------------------ 工程化布局微调 ------------------------------ */
@@ -170,167 +170,8 @@
   font-weight: 700;
 }
 
-/* ------------------------------ 工序看板 ------------------------------ */
-.process-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-}
-.process-card {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 16px 18px 14px;
-}
-.process-card.readonly {
-  background: #FBF9FF;
-}
-.process-head {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-.process-ico {
-  width: 30px;
-  height: 30px;
-  flex: 0 0 auto;
-  display: grid;
-  place-items: center;
-  border-radius: 9px;
-  background: var(--brand-soft);
-  color: var(--brand);
-}
-.process-card.readonly .process-ico {
-  background: var(--purple-soft);
-  color: var(--purple);
-}
-.process-title {
-  flex: 1;
-  min-width: 0;
-}
-.process-name {
-  font-size: 13.5px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-.process-stage {
-  margin-top: 3px;
-  font-size: 10.5px;
-  color: var(--ink-3);
-}
-.role-chip {
-  flex: 0 0 auto;
-  padding: 2px 7px;
-  border-radius: 5px;
-  font-size: 9.5px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-.role-chip.owner {
-  background: rgba(59, 87, 232, 0.1);
-  color: var(--brand-deep);
-}
-.role-chip.readonly {
-  background: rgba(139, 92, 246, 0.1);
-  color: #6D46C8;
-}
-.process-owners {
-  display: grid;
-  gap: 6px;
-  font-size: 11px;
-  color: var(--ink-2);
-}
-.process-owners > div {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.pc-label {
-  font-size: 9.5px;
-  font-weight: 750;
-  letter-spacing: 0.1em;
-  color: var(--ink-3);
-}
-.co-chip {
-  padding: 1px 6px;
-  border-radius: 5px;
-  background: #F1F4FA;
-  font-size: 10.5px;
-  color: var(--ink-2);
-}
-.process-foot {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  margin-top: auto;
-  padding-top: 10px;
-  border-top: 1px solid var(--line-soft);
-}
-.process-note {
-  font-size: 10px;
-  color: var(--ink-3);
-}
-
-/* ------------------------------ 权限抽屉 ------------------------------ */
-.drawer-note {
-  margin: 0 0 16px;
-  padding: 11px 12px;
-  border: 1px dashed var(--line);
-  border-radius: 10px;
-  background: #F8FAFE;
-  font-size: 11px;
-  line-height: 1.8;
-  color: var(--ink-2);
-}
-.drawer-note code {
-  padding: 1px 4px;
-  border-radius: 4px;
-  background: rgba(59, 87, 232, 0.08);
-  font-size: 10.5px;
-  color: var(--brand-deep);
-}
-.access-section-title {
-  margin-bottom: 8px;
-  font-size: 9.5px;
-  font-weight: 750;
-  letter-spacing: 0.12em;
-  color: var(--ink-3);
-}
-.access-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 6px;
-}
-.access-list li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 9px 10px;
-  border: 1px solid var(--line-soft);
-  border-radius: 9px;
-  background: #FBFCFE;
-}
-.access-list b {
-  display: block;
-  font-size: 12px;
-  font-weight: 650;
-}
-.access-list li > div span {
-  display: block;
-  margin-top: 2px;
-  font-size: 10px;
-  color: var(--ink-3);
-}
-
 /* ------------------------------ 响应式 ------------------------------ */
 @media (max-width: 1280px) {
-  .process-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
   .stage-axis-meta {
     display: none;
   }
@@ -341,14 +182,460 @@
   }
 }
 @media (max-width: 860px) {
-  .process-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
   .stage-axis {
     top: 0;
     padding: 8px 16px;
   }
   .stage-axis-label {
     display: none;
+  }
+}
+
+/* ------------------------------ 登录页（全屏分段：58 / 42） ------------------------------ */
+.auth-page {
+  --auth-split: 58%;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #0F0F12;
+}
+
+/* 全息马赛克：只铺左栏，右侧多铺 1px 压到视频下方，消除亚像素缝 */
+.auth-holo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: calc(var(--auth-split) + 1px);
+  z-index: 0;
+}
+
+/* 局部暗化：只压文案/品牌/版权三块区域，其余区域保留金属高光与流光 */
+.auth-scrim {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: calc(var(--auth-split) + 1px);
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(58% 34% at 28% 52%, rgba(2, 7, 5, 0.82) 0%, rgba(2, 7, 5, 0.62) 52%, rgba(2, 7, 5, 0.16) 84%, rgba(2, 7, 5, 0) 100%),
+    radial-gradient(34% 22% at 12% 7%, rgba(2, 7, 5, 0.66) 0%, rgba(2, 7, 5, 0.34) 55%, rgba(2, 7, 5, 0) 78%),
+    radial-gradient(32% 14% at 13% 96%, rgba(2, 7, 5, 0.75) 0%, rgba(2, 7, 5, 0.45) 58%, rgba(2, 7, 5, 0) 82%),
+    linear-gradient(rgba(255, 190, 130, 0.04), rgba(255, 190, 130, 0.04));
+}
+
+/* 品牌文案覆盖层：限制在左栏安全区 */
+.auth-copy {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  width: min(420px, calc(58vw - 100px));
+  padding: 44px 0 34px 52px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 28px;
+  color: #FFFFFF;
+  pointer-events: none;
+}
+
+.auth-brand {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.auth-logo {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-size: 24px;
+  font-weight: 850;
+  letter-spacing: -0.04em;
+  box-shadow: 0 14px 28px -20px rgba(10, 12, 40, 0.75);
+}
+.auth-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+.auth-brand-text b {
+  font-size: 15px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+}
+.auth-brand-text span {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.auth-hero-body {
+  position: relative;
+  z-index: 1;
+  max-width: 520px;
+}
+.auth-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.78);
+}
+.auth-hero-body h1 {
+  margin: 14px 0 0;
+  font-size: clamp(36px, 3.2vw, 52px);
+  line-height: 1.22;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.auth-hero-body p {
+  margin: 14px 0 0;
+  max-width: 400px;
+  font-size: 13px;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.8);
+}
+.auth-points {
+  list-style: none;
+  margin: 30px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.auth-points li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 12px;
+  backdrop-filter: blur(6px);
+}
+.auth-point-ico {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.12);
+}
+.auth-hero-foot {
+  position: relative;
+  z-index: 1;
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* 右栏：纯白背景，左缘一条极淡的绿色过渡，与马赛克交界不生硬 */
+.auth-panel {
+  position: absolute;
+  left: var(--auth-split);
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  overflow-y: auto;
+  padding: 40px 24px 96px;
+  background:
+    linear-gradient(90deg, rgba(9, 61, 46, 0.05) 0px, rgba(255, 255, 255, 0) 130px),
+    #FFFFFF;
+  border-left: 1px solid rgba(6, 60, 44, 0.08);
+  box-shadow: -22px 0 46px -34px rgba(3, 40, 28, 0.5);
+}
+.auth-card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 460px;
+  /* 四个方向 auto：在右栏内水平、垂直居中；过矮时自动让位给滚动 */
+  margin: auto;
+  padding: 40px 38px 30px;
+  /* 浅色磨砂玻璃：半透白 + 极淡薄荷绿，白底可透出，靠边缘高光立住 */
+  background:
+    radial-gradient(120% 90% at 12% 0%, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 62%),
+    linear-gradient(152deg, rgba(255, 255, 255, 0.66) 0%, rgba(226, 244, 236, 0.58) 52%, rgba(211, 237, 226, 0.52) 100%);
+  backdrop-filter: blur(22px) saturate(1.18);
+  -webkit-backdrop-filter: blur(22px) saturate(1.18);
+  border: 1px solid rgba(6, 78, 56, 0.16);
+  border-radius: calc(var(--radius) + 2px);
+  box-shadow:
+    0 20px 46px -28px rgba(6, 50, 37, 0.42),
+    0 2px 8px rgba(6, 50, 37, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+/* 不支持 backdrop-filter：退化为浅薄荷实底，深色文字仍清晰 */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .auth-card {
+    background: #EDF7F2;
+  }
+}
+.auth-card .n-input {
+  --n-color: rgba(255, 255, 255, 0.62) !important;
+  --n-color-focus: rgba(255, 255, 255, 0.82) !important;
+  --n-text-color: #0A2A20 !important;
+  --n-placeholder-color: rgba(9, 40, 30, 0.68) !important;
+  --n-caret-color: #047857 !important;
+  --n-icon-color: rgba(9, 40, 30, 0.6) !important;
+  --n-icon-color-hover: #0A2A20 !important;
+  --n-icon-color-pressed: #047857 !important;
+  --n-border: 1px solid rgba(6, 60, 44, 0.16) !important;
+  --n-border-hover: 1px solid rgba(6, 60, 44, 0.26) !important;
+  --n-border-focus: 1px solid #059669 !important;
+  --n-border-error: 1px solid #DC2626 !important;
+  --n-border-focus-error: 1px solid #EF4444 !important;
+  --n-box-shadow-focus-error: 0 0 0 3px rgba(220, 38, 38, 0.16) !important;
+  --n-box-shadow-focus: 0 0 0 3px rgba(5, 150, 105, 0.18) !important;
+  --n-border-radius: 10px;
+  --n-height: 44px !important;
+  background-color: rgba(255, 255, 255, 0.62);
+}
+/* 输入框前后缀图标：深绿灰，避免继承主题紫灰 */
+.auth-card .n-input__prefix,
+.auth-card .n-input__prefix *,
+.auth-card .n-input__suffix,
+.auth-card .n-input__suffix * {
+  color: rgba(9, 40, 30, 0.6) !important;
+}
+.auth-card .n-checkbox {
+  --n-text-color: #0A2A20 !important;
+  --n-color-checked: #059669 !important;
+  --n-border-checked: 1px solid #059669 !important;
+  --n-border-focus: 1px solid #059669 !important;
+  --n-box-shadow-focus: 0 0 0 2px rgba(52, 211, 153, 0.28) !important;
+  --n-check-mark-color: #FFFFFF !important;
+}
+/* 主按钮：翡翠绿实底（取自马赛克块 #0E7B68），白字 */
+.auth-card .n-button.n-button--primary-type {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  --n-border-radius: 10px;
+  --n-height: 44px !important;
+  --n-border-focus: 1px solid transparent !important;
+  --n-box-shadow-focus: none !important;
+  --n-text-color: #FFFFFF !important;
+  background-color: #0E7B68;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 46%, rgba(0, 0, 0, 0.07) 100%);
+  color: #FFFFFF;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-shadow: 0 1px 1px rgba(3, 25, 20, 0.3);
+  box-shadow:
+    0 10px 20px -14px rgba(6, 50, 37, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  transition: background-color 0.24s var(--ease), box-shadow 0.24s var(--ease), transform 0.12s var(--ease);
+}
+.auth-card .n-button.n-button--primary-type:hover {
+  background-color: #0F8571;
+  box-shadow:
+    0 12px 24px -14px rgba(6, 50, 37, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+.auth-card .n-button.n-button--primary-type:active {
+  transform: translateY(1px);
+  background-color: #0B6B5B;
+  box-shadow:
+    0 5px 12px -12px rgba(6, 50, 37, 0.5),
+    inset 0 2px 4px rgba(0, 20, 15, 0.22);
+}
+.auth-card .n-button.n-button--primary-type:focus-visible {
+  outline: 2px solid #10B981;
+  outline-offset: 3px;
+}
+/* 清掉浏览器/Naive 默认的蓝色聚焦描边与状态边框 */
+.auth-card .n-button.n-button--primary-type,
+.auth-card .n-button.n-button--primary-type:focus:not(:focus-visible) {
+  outline: none;
+}
+.auth-card .n-button .n-button__border,
+.auth-card .n-button .n-button__state-border {
+  display: none !important;
+}
+.auth-card-head h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  color: #0A2A20;
+}
+.auth-card-head p {
+  margin: 7px 0 0;
+  font-size: 12px;
+  color: rgba(10, 42, 32, 0.7);
+}
+.auth-card .n-form {
+  margin-top: 22px;
+}
+.auth-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 14px;
+  font-size: 12px;
+}
+.auth-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #047857;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: color 0.18s var(--ease);
+}
+.auth-link:hover {
+  color: #065F46;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.auth-error {
+  --n-color: rgba(220, 38, 38, 0.08) !important;
+  --n-text-color: #991B1B !important;
+  --n-content-text-color: #991B1B !important;
+  --n-title-text-color: #991B1B !important;
+  --n-icon-color: #DC2626 !important;
+  --n-border: 1px solid rgba(220, 38, 38, 0.28) !important;
+  margin-bottom: 12px;
+  border-radius: 10px;
+}
+/* 校验提示：浅玻璃卡上用深红，保证在白亮底上可读 */
+.auth-card .n-form-item {
+  --n-feedback-text-color: rgba(10, 42, 32, 0.7) !important;
+  --n-feedback-text-color-error: #B91C1C !important;
+  --n-feedback-text-color-warning: #B45309 !important;
+}
+.auth-hint {
+  margin: 18px 0 0;
+  text-align: center;
+  font-size: 10.5px;
+  line-height: 1.7;
+  color: rgba(10, 42, 32, 0.72);
+}
+.auth-hint b {
+  color: #0A2A20;
+  font-weight: 700;
+}
+.auth-notice {
+  margin: 10px 0 0;
+  padding: 9px 11px;
+  border: 1px solid rgba(6, 60, 44, 0.14);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.55);
+  font-size: 10px;
+  line-height: 1.7;
+  color: rgba(10, 42, 32, 0.72);
+}
+
+/* 登录页背景：全息马赛克（含无 WebGL / 触屏时的静态降级底） */
+.auth-holo-fallback {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(640px 460px at 16% 10%, rgba(16, 185, 129, 0.12), transparent 62%),
+    linear-gradient(135deg, #03100B 0%, #07271C 55%, #041610 100%);
+}
+
+/* ------------------------------ 登录页眼睛（黑白极简） ------------------------------ */
+.login-eyes {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 14px;
+  pointer-events: none;
+  user-select: none;
+}
+.robot {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 10px 16px rgba(16, 14, 26, 0.16));
+}
+.robot-ball {
+  width: 52px;
+  height: 52px;
+  display: block;
+  overflow: visible;
+}
+.robot-body {
+  fill: #0E0F11;
+}
+.robot-eye {
+  fill: #FFFFFF;
+}
+@media (max-width: 900px) {
+  .robot,
+  .robot-ball {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+/* 首次登录修改密码弹窗 */
+.pwd-card {
+  width: min(420px, calc(100vw - 32px));
+  padding: 28px 26px 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.pwd-card h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.pwd-sub {
+  margin: 8px 0 18px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--ink-3);
+}
+.pwd-later {
+  display: block;
+  margin: 12px auto 0;
+}
+
+/* 窄屏单列：隐藏马赛克与文案，只留居中的实心卡片 */
+@media (max-width: 900px) {
+  .auth-holo,
+  .auth-scrim,
+  .auth-copy {
+    display: none;
+  }
+  /* 单列布局：整屏白底 */
+  .auth-panel {
+    left: 0;
+    right: 0;
+    border-left: 0;
+    padding: 26px 18px 40px;
+  }
+  .auth-card {
+    max-width: 460px;
+    padding: 26px 22px 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-link {
+    transition: none;
   }
 }
