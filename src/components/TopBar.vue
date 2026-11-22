@@ -5,10 +5,17 @@ import type { DropdownOption } from 'naive-ui'
 import { useMessage } from 'naive-ui'
 import Ico from '@/components/Ico.vue'
 import { departmentOfParam, stageOfParam } from '@/data/org'
+import { getSession, logout } from '@/utils/auth'
 
 const route = useRoute()
 const router = useRouter()
 const message = useMessage()
+
+/* 顶栏展示当前登录人（来自本地会话） */
+const session = getSession()
+const userName = session?.displayName ?? '邢鹏昀'
+const userInitial = userName.slice(0, 1)
+const userRole = session?.role === 'admin' ? '超级管理员' : '成员'
 const topSearch = ref('')
 const searchRef = ref<{ focus?: () => void } | null>(null)
 
@@ -53,8 +60,13 @@ function onNotice(key: string | number): void {
 }
 
 function onUser(key: string | number): void {
-  if (key === 'logout') message.success('已退出当前账号（示例）')
-  else notify(`「${key === 'profile' ? '个人中心' : '账号设置'}」为示例入口`)
+  if (key === 'logout') {
+    logout()
+    message.success('已退出登录')
+    router.replace({ name: 'login' })
+    return
+  }
+  notify(`「${key === 'profile' ? '个人中心' : '账号设置'}」为示例入口`)
 }
 
 function onKeydown(e: KeyboardEvent): void {
@@ -114,8 +126,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 
       <n-dropdown :options="userOptions" trigger="click" @select="onUser">
         <button class="user">
-          <n-avatar round :size="30" class="user-avatar">陈</n-avatar>
-          <span class="user-meta"><b>陈嘉禾</b><i>超级管理员</i></span>
+          <n-avatar round :size="30" class="user-avatar">{{ userInitial }}</n-avatar>
+          <span class="user-meta"><b>{{ userName }}</b><i>{{ userRole }}</i></span>
           <Ico name="chevron-down" :size="13" class="user-chev" />
         </button>
       </n-dropdown>

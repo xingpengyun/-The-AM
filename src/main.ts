@@ -1,20 +1,19 @@
 import { createApp, type Component } from 'vue'
 import { MotionPlugin } from '@vueuse/motion'
 import {
+  NAlert,
   NAvatar,
   NBreadcrumb,
   NBreadcrumbItem,
   NButton,
+  NCheckbox,
   NConfigProvider,
-  NDataTable,
-  NDatePicker,
-  NDrawer,
-  NDrawerContent,
   NDropdown,
+  NForm,
+  NFormItem,
   NInput,
   NMessageProvider,
-  NSelect,
-  NTag,
+  NModal,
   NTooltip
 } from 'naive-ui'
 import App from './App.vue'
@@ -30,17 +29,16 @@ const naiveComponents: Record<string, Component> = {
   NMessageProvider,
   NInput,
   NButton,
-  NSelect,
-  NDatePicker,
-  NDataTable,
-  NTag,
+  NForm,
+  NFormItem,
+  NCheckbox,
+  NAlert,
   NAvatar,
-  NDropdown,
   NBreadcrumb,
   NBreadcrumbItem,
-  NTooltip,
-  NDrawer,
-  NDrawerContent
+  NDropdown,
+  NModal,
+  NTooltip
 }
 
 Object.entries(naiveComponents).forEach(([name, component]) => {

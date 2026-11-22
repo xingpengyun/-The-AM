@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Ico from '@/components/Ico.vue'
 import { departments, isDepartmentKey } from '@/data/org'
@@ -21,6 +21,53 @@ const currentDeptKey = computed<DepartmentKey | null>(() => {
   const key = route.params.dept
   return isDepartmentKey(key) ? key : null
 })
+
+/* 选中项在导航里的序号：首页 0，部门从 1 开始；无选中时 -1 */
+const activeIndex = computed(() => {
+  if (isHome.value) return 0
+  if (!currentDeptKey.value) return -1
+  return departments.findIndex((d) => d.key === currentDeptKey.value) + 1
+})
+
+/* 共享的选中胶囊：只保留一个元素，位置/尺寸随选中项变化做过渡 */
+const listEl = ref<HTMLElement | null>(null)
+const pill = reactive({ x: 0, y: 0, w: 0, h: 96, visible: false })
+const pillReady = ref(false)
+
+function syncPill(): void {
+  const index = activeIndex.value
+  if (index < 0) {
+    pill.visible = false
+    return
+  }
+  const el = listEl.value?.querySelectorAll<HTMLElement>('.nav-item')[index]
+  if (!el) return
+  pill.x = el.offsetLeft
+  pill.y = el.offsetTop - 16
+  pill.w = el.offsetWidth
+  pill.h = el.offsetHeight + 32
+  pill.visible = true
+}
+
+let resizeObserver: ResizeObserver | null = null
+
+onMounted(async () => {
+  await nextTick()
+  syncPill()
+  /* 首帧落位后再开启过渡，避免刷新时胶囊从 0 处滑入 */
+  requestAnimationFrame(() => { pillReady.value = true })
+  if (listEl.value) {
+    resizeObserver = new ResizeObserver(syncPill)
+    resizeObserver.observe(listEl.value)
+  }
+})
+
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect()
+  resizeObserver = null
+})
+
+watch(activeIndex, () => nextTick(syncPill))
 
 function goHome(): void {
   if (isHome.value) return
@@ -45,7 +92,19 @@ function goDept(key: DepartmentKey): void {
     </n-tooltip>
 
     <nav class="nav">
-      <div class="nav-list">
+      <div ref="listEl" class="nav-list">
+        <svg
+          v-show="pill.visible"
+          class="nav-pill"
+          :class="{ animated: pillReady }"
+          :style="{ transform: `translate3d(${pill.x}px, ${pill.y}px, 0)`, width: pill.w + 'px', height: pill.h + 'px' }"
+          viewBox="0 0 92 96"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path class="nav-pill-shape" :d="pillPath" />
+        </svg>
+
         <n-tooltip placement="right" :delay="120">
           <template #trigger>
             <button
@@ -55,16 +114,7 @@ function goDept(key: DepartmentKey): void {
               :aria-current="isHome ? 'page' : undefined"
               @click="goHome"
             >
-              <svg
-                v-if="isHome"
-                class="nav-pill"
-                viewBox="0 0 92 96"
-                preserveAspectRatio="none"
-                aria-hidden="true"
-              >
-                <path class="nav-pill-shape" :d="pillPath" />
-              </svg>
-              <Ico class="nav-ico" name="home" :size="21" />
+              <Ico class="nav-ico" name="home" :size="23" />
             </button>
           </template>
           首页
@@ -79,16 +129,7 @@ function goDept(key: DepartmentKey): void {
               :aria-current="currentDeptKey === d.key ? 'page' : undefined"
               @click="goDept(d.key)"
             >
-              <svg
-                v-if="currentDeptKey === d.key"
-                class="nav-pill"
-                viewBox="0 0 92 96"
-                preserveAspectRatio="none"
-                aria-hidden="true"
-              >
-                <path class="nav-pill-shape" :d="pillPath" />
-              </svg>
-              <Ico class="nav-ico" :name="d.icon" :size="21" />
+              <Ico class="nav-ico" :name="d.icon" :size="23" />
             </button>
           </template>
           {{ d.name }}

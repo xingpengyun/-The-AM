@@ -1,8 +1,8 @@
 /*
  * 领域类型定义
  * ------------------------------------------------------------------
- * 覆盖组织（部门 / 阶段 / 工序 / 权限）、KPI、订单、渠道、省份地图
- * 与趋势图等核心数据结构，供 data 模块、页面与组件共用。
+ * 覆盖组织（部门 / 阶段 / 工序）、省份 / 地图与 GeoJSON 等核心数据结构，
+ * 供 data 模块、页面与组件共用。
  */
 import type { IconName } from '@/data/icons'
 
@@ -71,88 +71,6 @@ export interface Process {
   owner: DepartmentKey
   /* 协办部门（只读来源） */
   co: DepartmentKey[]
-}
-
-/* owner = 主责可编辑；readonly = 协办只读；none = 与本部门无关 */
-export type ProcessRole = 'owner' | 'readonly' | 'none'
-
-export interface ProcessWithRole extends Process {
-  role: ProcessRole
-}
-
-/* ---------------- 权限规则 ---------------- */
-
-/* 预留的部门级角色覆盖，接入后端后由接口返回值填充 */
-export type RoleOverride = Exclude<ProcessRole, 'none'>
-export type RoleOverrideMap = Partial<Record<DepartmentKey, Record<string, RoleOverride>>>
-export type EditableStageMap = Partial<Record<DepartmentKey, StageKey[]>>
-
-/* ---------------- KPI ---------------- */
-
-export type KpiVariant = 'plain'
-
-export interface KpiStat {
-  label: string
-  value: string
-  icon: IconName
-  delta: string
-  up: boolean
-  good: boolean
-  note: string
-  variant: KpiVariant
-  color: string
-  soft: string
-  area: string
-  sparkLine: string
-  sparkArea: string
-}
-
-/* 数据源定义：迷你折线路径由 buildSpark 派生 */
-export type KpiStatDef = Omit<KpiStat, 'sparkLine' | 'sparkArea'>
-
-/* ---------------- 订单 ---------------- */
-
-export type PayMethod = '支付宝' | '微信支付' | '银联' | '对公转账'
-export type OrderStatus = '已支付' | '待支付' | '已完成' | '已退款' | '已取消'
-
-export interface Order {
-  id: string
-  name: string
-  email: string
-  amount: number
-  pay: PayMethod
-  status: OrderStatus
-  time: string
-  ts: number
-  avatarBg: string
-  avatarFg: string
-}
-
-export interface StatusStyle {
-  bg: string
-  fg: string
-}
-
-export interface SelectOptionItem<T extends string = string> {
-  label: T
-  value: T
-}
-
-/* ---------------- 渠道分布 ---------------- */
-
-export interface ChannelRaw {
-  name: string
-  value: number
-  color: string
-}
-
-export interface ChannelSegment extends ChannelRaw {
-  /* 占比（整数百分比） */
-  pct: number
-  total: number
-  /* SVG stroke-dasharray / dashoffset */
-  dash: string
-  offset: string
 }
 
 /* ---------------- 省份 / 地图 ---------------- */
@@ -241,49 +159,4 @@ export interface GeoFeature {
 export interface GeoCollection {
   type?: string
   features: GeoFeature[]
-}
-
-/* ---------------- 趋势图 ---------------- */
-
-export type ChartRange = '7d' | '30d'
-
-export interface ChartSet {
-  labels: string[]
-  axisIndexes: number[]
-  cur: number[]
-  prev: number[]
-}
-
-export interface ChartPoint {
-  x: number
-  y: number
-}
-
-export interface ChartData {
-  labels: string[]
-  axisLabels: string[]
-  cur: number[]
-  prev: number[]
-  ticks: number[]
-  line: string
-  prevPath: string
-  area: string
-  points: ChartPoint[]
-}
-
-export interface ChartSummary {
-  peak: string
-  avg: string
-  delta: string
-  up: boolean
-}
-
-export interface ChartHover {
-  x: number
-  y: number
-  label: string
-  cur: string
-  prev: string
-  tipLeft: number
-  tipTop: number
 }
