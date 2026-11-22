@@ -1,5 +1,7 @@
+import type { GlobalThemeOverrides } from 'naive-ui'
+
 /* Naive UI 主题覆盖：糖果色板（加深版） */
-export const themeOverrides = {
+export const themeOverrides: GlobalThemeOverrides = {
   common: {
     primaryColor: '#3B57E8',
     primaryColorHover: '#6C8CFF',

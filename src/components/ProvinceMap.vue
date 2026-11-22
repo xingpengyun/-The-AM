@@ -1,8 +1,8 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useMessage } from 'naive-ui'
 import Ico from '@/components/Ico.vue'
-import geoSource from '@/data/china-geo.json'
+import geoSourceRaw from '@/data/china-geo.json'
 import {
   fmtNum,
   fmtMoneyShort,
@@ -15,16 +15,27 @@ import {
   eastStoreShare,
   topProvinces
 } from '@/data/business'
+import type {
+  GeoCollection,
+  GeoFeature,
+  LinearRing,
+  MapShape,
+  MapState,
+  MapTip,
+  ProvinceStoreInfo
+} from '@/types/domain'
 
 const message = useMessage()
 
-const mapPlotEl = ref(null)
-const mapState = ref('loading')
+const mapPlotEl = ref<HTMLDivElement | null>(null)
+const mapState = ref<MapState>('loading')
 const mapError = ref('')
-const selectedProvince = ref(null)
-const mapShapes = ref([])
-const mapTip = ref(null)
-let mapGeo = null
+const selectedProvince = ref<ProvinceStoreInfo | null>(null)
+const mapShapes = ref<MapShape[]>([])
+const mapTip = ref<MapTip | null>(null)
+let mapGeo: GeoCollection | null = null
+
+const geoSource = geoSourceRaw as unknown as GeoCollection
 
 const MAP_VIEW_W = 840
 const MAP_VIEW_H = 600
@@ -32,7 +43,7 @@ const MAP_PAD = 24
 /* 门店数多色分级：浅蓝 → 中蓝 → 品牌蓝，明度统一递减 */
 const MAP_STOPS = ['#EEF3FF', '#DBE4FF', '#C4D0FF', '#AAB7FF', '#8E9BFF', '#7C8CFA']
 /* 东部紧凑省份的标签外移，配合引线避免数字互相叠压 */
-const MAP_LABEL_OFFSETS = {
+const MAP_LABEL_OFFSETS: Record<string, [number, number]> = {
   北京: [-30, -22], 天津: [30, 7], 上海: [39, -5], 香港: [27, 20],
   澳门: [-31, 27], 海南: [-13, 15], 宁夏: [0, -11], 江苏: [-15, -8],
   浙江: [14, 14], 安徽: [-13, 5], 台湾: [13, 1], 重庆: [-9, 11],
@@ -43,7 +54,7 @@ const MAP_PILLS = ['北京', '天津', '上海', '香港', '澳门']
 
 const provinceCount = provinceOrders.length
 
-function shortenProvince(name) {
+function shortenProvince(name: string | undefined): string {
   return String(name || '')
     .replace(/特别行政区$/, '')
     .replace(/(壮族|回族|维吾尔)自治区$/, '')
@@ -52,9 +63,9 @@ function shortenProvince(name) {
     .replace(/市$/, '')
 }
 
-function geoMaxLat(coords) {
+function geoMaxLat(coords: unknown): number {
   let max = -90
-  ;(function walk(node) {
+  ;(function walk(node: unknown) {
     if (!Array.isArray(node)) return
     if (typeof node[0] === 'number' && typeof node[1] === 'number') {
       if (node[1] > max) max = node[1]
@@ -65,9 +76,9 @@ function geoMaxLat(coords) {
   return max
 }
 
-function normalizeGeo(geo) {
+function normalizeGeo(geo: GeoCollection): GeoCollection {
   if (!geo || !geo.features || !geo.features.length) throw new Error('invalid geo')
-  const kept = []
+  const kept: GeoFeature[] = []
   geo.features.forEach((f) => {
     if (!f || !f.properties) return
     if (typeof f.properties.name === 'string') {
@@ -75,8 +86,13 @@ function normalizeGeo(geo) {
     }
     /* 南海诸岛另以右下角小插图呈现，不参与主图范围计算 */
     if (f.properties.name === '南海诸岛') return
-    if (f.properties.name === '海南' && f.geometry && f.geometry.coordinates) {
-      f.geometry.coordinates = f.geometry.coordinates.filter((poly) => geoMaxLat(poly) >= 17)
+    const geom = f.geometry
+    if (f.properties.name === '海南' && geom) {
+      if (geom.type === 'MultiPolygon') {
+        geom.coordinates = geom.coordinates.filter((poly) => geoMaxLat(poly) >= 17)
+      } else {
+        geom.coordinates = geom.coordinates.filter((ring) => geoMaxLat(ring) >= 17)
+      }
     }
     kept.push(f)
   })
@@ -84,7 +100,7 @@ function normalizeGeo(geo) {
   return geo
 }
 
-function polygonsOf(feature) {
+function polygonsOf(feature: GeoFeature): LinearRing[][] {
   const g = feature.geometry
   if (!g || !g.coordinates) return []
   if (g.type === 'Polygon') return [g.coordinates]
@@ -93,18 +109,18 @@ function polygonsOf(feature) {
 }
 
 /* 墨卡托投影：经度取 x，纬度经投影后取 -y，避免高纬度地区被拉伸 */
-function projectPoint(lng, lat) {
+function projectPoint(lng: number, lat: number): [number, number] {
   const y = Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360))
   return [lng, -(y * 180) / Math.PI]
 }
 
-function mapFillOf(stores) {
+function mapFillOf(stores: number): string {
   if (!stores) return '#F5F2FB'
   const t = Math.pow(Math.max(0, Math.min(1, stores / provinceStoreMax)), 0.55)
   const pos = t * (MAP_STOPS.length - 1)
   const i = Math.min(MAP_STOPS.length - 2, Math.floor(pos))
   const f = pos - i
-  const rgb = (hex) => [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)]
+  const rgb = (hex: string): number[] => [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)]
   const a = rgb(MAP_STOPS[i])
   const b = rgb(MAP_STOPS[i + 1])
   return 'rgb(' + [
@@ -114,7 +130,7 @@ function mapFillOf(stores) {
   ].join(',') + ')'
 }
 
-function buildMapShapes(geo) {
+function buildMapShapes(geo: GeoCollection): MapShape[] {
   const feats = geo.features || []
   let minX = Infinity
   let minY = Infinity
@@ -143,18 +159,19 @@ function buildMapShapes(geo) {
   const offX = (MAP_VIEW_W - (maxX - minX) * scale) / 2 - minX * scale
   const offY = (MAP_VIEW_H - (maxY - minY) * scale) / 2 - minY * scale
 
-  const sx = (p) => +(p[0] * scale + offX).toFixed(1)
-  const sy = (p) => +(p[1] * scale + offY).toFixed(1)
+  const sx = (p: number[]): number => +(p[0] * scale + offX).toFixed(1)
+  const sy = (p: number[]): number => +(p[1] * scale + offY).toFixed(1)
 
-  const shapes = []
+  const shapes: MapShape[] = []
   feats.forEach((f) => {
-    const name = f.properties && f.properties.name
+    const props = f.properties
+    const name = props && props.name
     if (!name) return
     const polys = polygonsOf(f)
     if (!polys.length) return
 
     let d = ''
-    let anchor = null
+    let anchor: [number, number] | null = null
     let anchorArea = -1
     polys.forEach((poly) => {
       poly.forEach((ring) => {
@@ -183,9 +200,10 @@ function buildMapShapes(geo) {
     })
     if (!d) return
 
-    if (f.properties.cp && f.properties.cp.length === 2) {
-      const cp = projectPoint(f.properties.cp[0], f.properties.cp[1])
-      anchor = [sx(cp), sy(cp)]
+    const cp = props && props.cp
+    if (cp && cp.length === 2) {
+      const point = projectPoint(cp[0], cp[1])
+      anchor = [sx(point), sy(point)]
     }
     if (!anchor) return
 
@@ -212,7 +230,7 @@ function buildMapShapes(geo) {
   return shapes
 }
 
-function provinceStoreInfo(name) {
+function provinceStoreInfo(name: string): ProvinceStoreInfo {
   const p = provinceByShort[name]
   const stores = provinceStoreByShort[name] || 0
   return {
@@ -226,7 +244,7 @@ function provinceStoreInfo(name) {
   }
 }
 
-function selectProvinceByName(name) {
+function selectProvinceByName(name: string): void {
   if (!name) return
   if (selectedProvince.value && selectedProvince.value.name === name) {
     clearProvinceSelection()
@@ -238,11 +256,11 @@ function selectProvinceByName(name) {
   message.info(`${name} · ${fmtNum(info.stores)} 家门店`, { duration: 1800 })
 }
 
-function clearProvinceSelection() {
+function clearProvinceSelection(): void {
   selectedProvince.value = null
 }
 
-function onProvinceMove(shape, e) {
+function onProvinceMove(shape: MapShape, e: MouseEvent): void {
   const host = mapPlotEl.value
   if (!host) return
   const rect = host.getBoundingClientRect()
@@ -259,11 +277,11 @@ function onProvinceMove(shape, e) {
   }
 }
 
-function onProvinceLeave() {
+function onProvinceLeave(): void {
   mapTip.value = null
 }
 
-function initMap() {
+function initMap(): void {
   mapState.value = 'loading'
   try {
     if (!mapGeo) mapGeo = normalizeGeo(geoSource)

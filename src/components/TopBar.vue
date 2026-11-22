@@ -1,25 +1,26 @@
-<script setup>
+<script setup lang="ts">
 import { computed, h, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import type { DropdownOption } from 'naive-ui'
 import { useMessage } from 'naive-ui'
 import Ico from '@/components/Ico.vue'
-import { departmentByKey, defaultDepartmentKey, stageByKey } from '@/data/org'
+import { departmentOfParam, stageOfParam } from '@/data/org'
 
 const route = useRoute()
 const router = useRouter()
 const message = useMessage()
 const topSearch = ref('')
-const searchRef = ref(null)
+const searchRef = ref<{ focus?: () => void } | null>(null)
 
 const isHome = computed(() => route.name === 'home')
-const dept = computed(() => departmentByKey[route.params.dept] || departmentByKey[defaultDepartmentKey])
-const stage = computed(() => stageByKey[route.params.stage] || null)
+const dept = computed(() => departmentOfParam(route.params.dept))
+const stage = computed(() => stageOfParam(route.params.stage))
 
-function goHome() {
+function goHome(): void {
   if (!isHome.value) router.push('/home')
 }
 
-const noticeOptions = [
+const noticeOptions: DropdownOption[] = [
   { key: 'n1', label: '订单 BB202611210089 已完成支付', icon: () => h(Ico, { name: 'check', size: 15 }) },
   { key: 'n2', label: '客户「林知远」提交了退款申请', icon: () => h(Ico, { name: 'refund', size: 15 }) },
   { key: 'n3', label: '本周经营周报已生成', icon: () => h(Ico, { name: 'file', size: 15 }) },
@@ -27,18 +28,18 @@ const noticeOptions = [
   { key: 'all', label: '查看全部通知', icon: () => h(Ico, { name: 'bell', size: 15 }) }
 ]
 
-const userOptions = [
+const userOptions: DropdownOption[] = [
   { key: 'profile', label: '个人中心', icon: () => h(Ico, { name: 'user', size: 15 }) },
   { key: 'settings', label: '账号设置', icon: () => h(Ico, { name: 'settings', size: 15 }) },
   { type: 'divider', key: 'd2' },
   { key: 'logout', label: '退出登录', icon: () => h(Ico, { name: 'logout', size: 15 }) }
 ]
 
-function notify(text) {
+function notify(text: string): void {
   message.info(text, { duration: 2200 })
 }
 
-function onSearch() {
+function onSearch(): void {
   if (!topSearch.value.trim()) {
     message.warning('请输入搜索关键词')
     return
@@ -46,17 +47,17 @@ function onSearch() {
   notify(`搜索「${topSearch.value.trim()}」（示例）`)
 }
 
-function onNotice(key) {
+function onNotice(key: string | number): void {
   if (key === 'all') notify('通知中心为示例模块')
   else notify('通知详情为示例内容')
 }
 
-function onUser(key) {
+function onUser(key: string | number): void {
   if (key === 'logout') message.success('已退出当前账号（示例）')
   else notify(`「${key === 'profile' ? '个人中心' : '账号设置'}」为示例入口`)
 }
 
-function onKeydown(e) {
+function onKeydown(e: KeyboardEvent): void {
   if ((e.ctrlKey || e.metaKey) && String(e.key).toLowerCase() === 'k') {
     e.preventDefault()
     if (searchRef.value && searchRef.value.focus) searchRef.value.focus()

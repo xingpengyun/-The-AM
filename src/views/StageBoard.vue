@@ -1,28 +1,30 @@
-<script setup>
+<script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useMessage } from 'naive-ui'
 import Ico from '@/components/Ico.vue'
-import { departmentByKey, departmentName, defaultDepartmentKey, processesOfDepartment, stageByKey } from '@/data/org'
+import { departmentName, departmentOfParam, processesOfDepartment, stageByKey, stageOfParam } from '@/data/org'
 import { resolveProcessRole, roleLabel } from '@/config/access'
+import type { ProcessWithRole } from '@/types/domain'
 
 const route = useRoute()
 const router = useRouter()
 const message = useMessage()
 const drawerOpen = ref(false)
 
-const dept = computed(() => departmentByKey[route.params.dept] || departmentByKey[defaultDepartmentKey])
-const stage = computed(() => stageByKey[route.params.stage] || null)
+const dept = computed(() => departmentOfParam(route.params.dept))
+const stage = computed(() => stageOfParam(route.params.stage))
 
 /* 只呈现本部门主责 / 协办的工序；协办标记为只读来源 */
-const stageProcesses = computed(() => {
-  if (!stage.value) return []
+const stageProcesses = computed<ProcessWithRole[]>(() => {
+  const current = stage.value
+  if (!current) return []
   return processesOfDepartment(dept.value.key)
-    .filter((p) => p.stage === stage.value.key)
+    .filter((p) => p.stage === current.key)
     .map((p) => ({ ...p, role: resolveProcessRole(dept.value.key, p) }))
 })
 
-const deptProcesses = computed(() => {
+const deptProcesses = computed<ProcessWithRole[]>(() => {
   return processesOfDepartment(dept.value.key).map((p) => ({
     ...p,
     role: resolveProcessRole(dept.value.key, p)
@@ -31,7 +33,7 @@ const deptProcesses = computed(() => {
 
 const ownedCount = computed(() => stageProcesses.value.filter((p) => p.role === 'owner').length)
 
-function notify(text) {
+function notify(text: string): void {
   message.info(text, { duration: 2200 })
 }
 </script>
@@ -85,7 +87,7 @@ function notify(text) {
           <span class="process-ico"><Ico name="file" :size="16" /></span>
           <div class="process-title">
             <div class="process-name">{{ p.name }}</div>
-            <div class="process-stage">{{ stage.no }} {{ stage.name }}</div>
+            <div class="process-stage">{{ stage?.no }} {{ stage?.name }}</div>
           </div>
           <span class="role-chip" :class="p.role">{{ p.role === 'owner' ? '主责' : '只读' }}</span>
         </div>

@@ -1,6 +1,7 @@
-<script setup>
+<script setup lang="ts">
 import { computed, h, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import type { DataTableColumns, DropdownOption, PaginationProps } from 'naive-ui'
 import { NDropdown, NTag, useMessage } from 'naive-ui'
 import Ico from '@/components/Ico.vue'
 import ProvinceMap from '@/components/ProvinceMap.vue'
@@ -18,21 +19,17 @@ import {
   computeChart,
   computeChartSummary
 } from '@/data/business'
-import { departmentByKey, defaultDepartmentKey, departments, processesOfDepartment } from '@/data/org'
+import { departments, departmentOfParam, processesOfDepartment } from '@/data/org'
+import type { ChartHover, ChartRange, Order, OrderStatus, PayMethod } from '@/types/domain'
 
-const props = defineProps({
-  global: { type: Boolean, default: false }
-})
+const props = withDefaults(defineProps<{ global?: boolean }>(), { global: false })
 
 const route = useRoute()
 const message = useMessage()
 
 /* 首页 = 跨部门全局看板；部门页才做部门范围过滤 */
 const isGlobal = computed(() => props.global || route.name === 'home')
-const dept = computed(() => {
-  if (isGlobal.value) return null
-  return departmentByKey[route.params.dept] || departmentByKey[defaultDepartmentKey]
-})
+const dept = computed(() => (isGlobal.value ? null : departmentOfParam(route.params.dept)))
 const deptProcesses = computed(() => (dept.value ? processesOfDepartment(dept.value.key) : []))
 const deptStageCount = computed(() => new Set(deptProcesses.value.map((p) => p.stage)).size)
 const scopeText = computed(() =>
@@ -41,14 +38,21 @@ const scopeText = computed(() =>
     : `覆盖 ${departments.length} 个部门 · S1–S11 全链路`
 )
 
-const range = ref('7d')
+interface FilterState {
+  keyword: string
+  status: OrderStatus | null
+  pay: PayMethod | null
+  range: [number, number] | null
+}
+
+const range = ref<ChartRange>('7d')
 const exporting = ref(false)
 const refreshing = ref(false)
-const hoverIdx = ref(null)
-const form = reactive({ keyword: '', status: null, pay: null, range: null })
-const applied = reactive({ keyword: '', status: null, pay: null, range: null })
+const hoverIdx = ref<number | null>(null)
+const form = reactive<FilterState>({ keyword: '', status: null, pay: null, range: null })
+const applied = reactive<FilterState>({ keyword: '', status: null, pay: null, range: null })
 
-const filteredOrders = computed(() => {
+const filteredOrders = computed<Order[]>(() => {
   return orders.filter((o) => {
     if (applied.keyword) {
       const kw = String(applied.keyword).trim().toLowerCase()
@@ -62,7 +66,7 @@ const filteredOrders = computed(() => {
     }
     if (applied.status && o.status !== applied.status) return false
     if (applied.pay && o.pay !== applied.pay) return false
-    if (applied.range && applied.range.length === 2) {
+    if (applied.range) {
       const start = new Date(applied.range[0])
       start.setHours(0, 0, 0, 0)
       const end = new Date(applied.range[1])
@@ -73,7 +77,13 @@ const filteredOrders = computed(() => {
   })
 })
 
-const pagination = reactive({
+interface TablePagination extends PaginationProps {
+  page: number
+  pageSize: number
+  pageSizes: number[]
+}
+
+const pagination = reactive<TablePagination>({
   page: 1,
   pageSize: 8,
   pageSizes: [8, 12, 20],
@@ -94,7 +104,7 @@ watch(filteredOrders, (list) => {
 const chart = computed(() => computeChart(range.value))
 const chartSummary = computed(() => computeChartSummary(range.value))
 
-const hover = computed(() => {
+const hover = computed<ChartHover | null>(() => {
   if (hoverIdx.value === null) return null
   const c = chart.value
   const p = c.points[hoverIdx.value]
@@ -113,11 +123,11 @@ const hover = computed(() => {
 
 watch(range, () => { hoverIdx.value = null })
 
-function notify(text) {
+function notify(text: string): void {
   message.info(text, { duration: 2200 })
 }
 
-function exportReport() {
+function exportReport(): void {
   if (exporting.value) return
   exporting.value = true
   setTimeout(() => {
@@ -126,7 +136,7 @@ function exportReport() {
   }, 900)
 }
 
-function refresh() {
+function refresh(): void {
   if (refreshing.value) return
   refreshing.value = true
   setTimeout(() => {
@@ -135,16 +145,16 @@ function refresh() {
   }, 700)
 }
 
-function applyFilters() {
+function applyFilters(): void {
   applied.keyword = form.keyword
   applied.status = form.status
   applied.pay = form.pay
-  applied.range = form.range ? form.range.slice() : null
+  applied.range = form.range ? [form.range[0], form.range[1]] : null
   pagination.page = 1
   message.success(`筛选完成，共 ${filteredOrders.value.length} 条结果`)
 }
 
-function resetFilters() {
+function resetFilters(): void {
   form.keyword = ''
   form.status = null
   form.pay = null
@@ -157,14 +167,14 @@ function resetFilters() {
   message.info('筛选条件已重置')
 }
 
-function onChartMove(e) {
-  const rect = e.currentTarget.getBoundingClientRect()
+function onChartMove(e: MouseEvent): void {
+  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
   if (!rect.width) return
   const ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width))
   hoverIdx.value = Math.round(ratio * (chart.value.labels.length - 1))
 }
 
-function rowMenu() {
+function rowMenu(): DropdownOption[] {
   return [
     { key: 'view', label: '查看详情', icon: () => h(Ico, { name: 'receipt', size: 15 }) },
     { key: 'copy', label: '复制订单号', icon: () => h(Ico, { name: 'file', size: 15 }) },
@@ -173,13 +183,13 @@ function rowMenu() {
   ]
 }
 
-function onRowAction(key, row) {
+function onRowAction(key: string | number, row: Order): void {
   if (key === 'view') notify(`打开订单 ${row.id} 详情（示例）`)
   else if (key === 'copy') notify(`订单号 ${row.id} 已复制（示例）`)
   else notify(`已将 ${row.id} 标记为已退款（示例）`)
 }
 
-const columns = [
+const columns: DataTableColumns<Order> = [
   {
     title: '订单编号', key: 'id', width: 152,
     render: (row) => h('span', { class: 'cell-id' }, row.id)

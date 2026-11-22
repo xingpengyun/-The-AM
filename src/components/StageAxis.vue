@@ -1,23 +1,24 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Ico from '@/components/Ico.vue'
-import { departmentByKey, defaultDepartmentKey, stages, stageByKey, processesOfDepartment } from '@/data/org'
+import { departmentOfParam, processesOfDepartment, stageOfParam, stages } from '@/data/org'
+import type { Stage } from '@/types/domain'
 
 const route = useRoute()
 const router = useRouter()
 
-const dept = computed(() => departmentByKey[route.params.dept] || departmentByKey[defaultDepartmentKey])
-const stage = computed(() => stageByKey[route.params.stage] || null)
+const dept = computed(() => departmentOfParam(route.params.dept))
+const stage = computed(() => stageOfParam(route.params.stage))
 
 /* 该部门实际参与的阶段（用于弱化无关阶段，不隐藏） */
 const deptStageKeys = computed(() => new Set(processesOfDepartment(dept.value.key).map((p) => p.stage)))
 
-function goStage(target) {
+function goStage(target: Stage): void {
   router.push({ name: 'dept-stage', params: { dept: dept.value.key, stage: target.key } })
 }
 
-function goAll() {
+function goAll(): void {
   router.push({ name: 'dept-overview', params: { dept: dept.value.key } })
 }
 </script>

@@ -1,8 +1,9 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Ico from '@/components/Ico.vue'
-import { departments, departmentByKey } from '@/data/org'
+import { departments, isDepartmentKey } from '@/data/org'
+import type { DepartmentKey } from '@/types/domain'
 
 const route = useRoute()
 const router = useRouter()
@@ -16,15 +17,18 @@ const pillPath =
   'M0 32A16 16 0 0 1 16 16H76A16 16 0 0 0 92 0V96A16 16 0 0 0 76 80H16A16 16 0 0 1 0 64Z'
 
 const isHome = computed(() => route.name === 'home')
-const currentDeptKey = computed(() => (departmentByKey[route.params.dept] ? route.params.dept : null))
+const currentDeptKey = computed<DepartmentKey | null>(() => {
+  const key = route.params.dept
+  return isDepartmentKey(key) ? key : null
+})
 
-function goHome() {
+function goHome(): void {
   if (isHome.value) return
   router.push('/home')
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-function goDept(key) {
+function goDept(key: DepartmentKey): void {
   if (key === currentDeptKey.value) return
   router.push(`/dept/${key}`)
   window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -48,7 +52,7 @@ function goDept(key) {
               class="nav-item"
               :class="{ active: isHome }"
               aria-label="首页"
-              :aria-current="isHome ? 'page' : null"
+              :aria-current="isHome ? 'page' : undefined"
               @click="goHome"
             >
               <svg
@@ -72,7 +76,7 @@ function goDept(key) {
               class="nav-item"
               :class="{ active: currentDeptKey === d.key }"
               :aria-label="d.name"
-              :aria-current="currentDeptKey === d.key ? 'page' : null"
+              :aria-current="currentDeptKey === d.key ? 'page' : undefined"
               @click="goDept(d.key)"
             >
               <svg

@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
+import { createApp, type Component } from 'vue'
 import { MotionPlugin } from '@vueuse/motion'
 import {
   NAvatar,
@@ -25,7 +25,7 @@ import './styles/extra.css'
 const app = createApp(App)
 
 /* 保留原型张的 Naive UI 用法：按组件名全局注册 */
-const naiveComponents = {
+const naiveComponents: Record<string, Component> = {
   NConfigProvider,
   NMessageProvider,
   NInput,

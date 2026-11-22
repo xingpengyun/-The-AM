@@ -1,9 +1,13 @@
-<script setup>
-import { icons } from '@/data/icons'
+<script setup lang="ts">
+import { icons, type IconName } from '@/data/icons'
 
-const props = defineProps({
-  name: { type: String, required: true },
-  size: { type: [Number, String], default: 16 }
+interface Props {
+  name: IconName
+  size?: number | string
+}
+
+withDefaults(defineProps<Props>(), {
+  size: 16
 })
 </script>
 

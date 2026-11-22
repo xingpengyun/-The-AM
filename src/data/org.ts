@@ -8,8 +8,9 @@
  *       S1–S9 阶段名来自需求；S10 / S11 为补齐 11 段链路预留的名称，
  *       工序条目为样张占位，接真实业务数据时只改本文件即可。
  */
+import type { Department, DepartmentKey, Process, Stage, StageKey } from '@/types/domain'
 
-export const departments = [
+export const departments: Department[] = [
   { key: 'zhaoshang', name: '招商中心', short: '招商', icon: 'megaphone' },
   { key: 'yingjian', name: '营建空间设计部', short: '营建', icon: 'box' },
   { key: 'shichang', name: '总部市场部', short: '市场', icon: 'sparkle' },
@@ -21,9 +22,9 @@ export const departments = [
   { key: 'compliance', name: '运营中心合规管理部', short: '合规', icon: 'shield' }
 ]
 
-export const defaultDepartmentKey = 'zhaoshang'
+export const defaultDepartmentKey: DepartmentKey = 'zhaoshang'
 
-export const stages = [
+export const stages: Stage[] = [
   { key: 's1', no: 'S1', name: '招商', hint: '线索获取与意向转化' },
   { key: 's2', no: 'S2', name: '资质评估', hint: '加盟商资质与资信审核' },
   { key: 's3', no: 'S3', name: '选址落位', hint: '商圈调研与点位评估' },
@@ -37,7 +38,7 @@ export const stages = [
   { key: 's11', no: 'S11', name: '续约退出', hint: '续约评估与退出交接' }
 ]
 
-export const processes = [
+export const processes: Process[] = [
   { id: 'p-s1-1', stage: 's1', name: '线索登记', owner: 'zhaoshang', co: [] },
   { id: 'p-s1-2', stage: 's1', name: '意向洽谈', owner: 'zhaoshang', co: ['shichang'] },
   { id: 'p-s1-3', stage: 's1', name: '线上招商线索', owner: 'yunnan-online', co: ['zhaoshang'] },
@@ -84,31 +85,51 @@ export const processes = [
   { id: 'p-s11-3', stage: 's11', name: '退出交接', owner: 'yunnan-sysops', co: ['quyu'] }
 ]
 
-export const departmentByKey = Object.fromEntries(departments.map((d) => [d.key, d]))
-export const stageByKey = Object.fromEntries(stages.map((s) => [s.key, s]))
+export const departmentByKey = Object.fromEntries(departments.map((d) => [d.key, d])) as Record<DepartmentKey, Department>
+export const stageByKey = Object.fromEntries(stages.map((s) => [s.key, s])) as Record<StageKey, Stage>
 
-export function departmentName(key) {
-  return departmentByKey[key] ? departmentByKey[key].name : key
+export function isDepartmentKey(value: unknown): value is DepartmentKey {
+  return typeof value === 'string' && Object.prototype.hasOwnProperty.call(departmentByKey, value)
 }
 
-export function departmentShort(key) {
-  return departmentByKey[key] ? departmentByKey[key].short : key
+export function isStageKey(value: unknown): value is StageKey {
+  return typeof value === 'string' && Object.prototype.hasOwnProperty.call(stageByKey, value)
 }
 
-export function stageName(key) {
-  return stageByKey[key] ? stageByKey[key].name : key
+/* 路由参数 → 部门：非法参数回落到默认部门 */
+export function departmentOfParam(value: string | string[] | undefined): Department {
+  const key = typeof value === 'string' ? value : ''
+  return isDepartmentKey(key) ? departmentByKey[key] : departmentByKey[defaultDepartmentKey]
 }
 
-export function processesOfStage(stageKey) {
+/* 路由参数 → 阶段：非法参数返回 null */
+export function stageOfParam(value: string | string[] | undefined): Stage | null {
+  const key = typeof value === 'string' ? value : ''
+  return isStageKey(key) ? stageByKey[key] : null
+}
+
+export function departmentName(key: string): string {
+  return isDepartmentKey(key) ? departmentByKey[key].name : key
+}
+
+export function departmentShort(key: string): string {
+  return isDepartmentKey(key) ? departmentByKey[key].short : key
+}
+
+export function stageName(key: string): string {
+  return isStageKey(key) ? stageByKey[key].name : key
+}
+
+export function processesOfStage(stageKey: StageKey): Process[] {
   return processes.filter((p) => p.stage === stageKey)
 }
 
 /* 部门可见工序：主责 + 协办；其他部门的工序不呈现 */
-export function processesOfDepartment(deptKey) {
+export function processesOfDepartment(deptKey: DepartmentKey): Process[] {
   return processes.filter((p) => p.owner === deptKey || p.co.includes(deptKey))
 }
 
-export function stagesOfDepartment(deptKey) {
+export function stagesOfDepartment(deptKey: DepartmentKey): Stage[] {
   const used = new Set(processesOfDepartment(deptKey).map((p) => p.stage))
   return stages.filter((s) => used.has(s.key))
 }

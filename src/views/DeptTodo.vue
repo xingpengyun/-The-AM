@@ -1,18 +1,18 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useMessage } from 'naive-ui'
 import Ico from '@/components/Ico.vue'
-import { departmentByKey, defaultDepartmentKey, processesOfDepartment } from '@/data/org'
+import { departmentOfParam, processesOfDepartment } from '@/data/org'
 
 const route = useRoute()
 const router = useRouter()
 const message = useMessage()
 
-const dept = computed(() => departmentByKey[route.params.dept] || departmentByKey[defaultDepartmentKey])
+const dept = computed(() => departmentOfParam(route.params.dept))
 const processCount = computed(() => processesOfDepartment(dept.value.key).length)
 
-function notify(text) {
+function notify(text: string): void {
   message.info(text, { duration: 2200 })
 }
 </script>
