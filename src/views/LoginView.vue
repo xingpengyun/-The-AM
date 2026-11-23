@@ -16,6 +16,21 @@ const HoloMosaic = defineAsyncComponent(() => import('@/components/HoloMosaic.vu
 const route = useRoute()
 const router = useRouter()
 
+/* 流光预设：一条光束内 3 个色标，默认 ocean 与中性卡片最协调 */
+interface BeamPreset {
+  key: string
+  name: string
+  stops: [string, string, string]
+}
+
+const BEAM_PRESETS: BeamPreset[] = [
+  { key: 'ocean', name: 'Ocean', stops: ['#1677ff', '#36cfc9', '#95de64'] },
+  { key: 'aurora', name: 'Aurora', stops: ['#22d3ee', '#818cf8', '#e879f9'] },
+  { key: 'nebula', name: 'Nebula', stops: ['#6366f1', '#a855f7', '#f472b6'] }
+]
+
+const beamPreset = BEAM_PRESETS[0]
+
 /* WebGL2 与指针能力探测：触屏 / 不支持时回退静态渐变 */
 const holoReady = ref(false)
 const showPassword = ref(false)
@@ -150,16 +165,25 @@ function forgot(): void {
     <!-- 登录卡片：相对整个视口居中 -->
     <section class="auth-panel">
       <div class="auth-card">
-        <!-- 外沿流光：SVG 描边沿卡片轮廓环行，粗细恒定、糖果多色彗尾 -->
+        <!-- 外沿流光：单条等宽描边，颜色由沿光束方向的三段色标渐变承载 -->
         <svg class="auth-beam" aria-hidden="true" focusable="false">
-          <rect class="auth-beam__t1" x="0" y="0" width="100%" height="100%" rx="26" pathLength="100" />
-          <rect class="auth-beam__t2" x="0" y="0" width="100%" height="100%" rx="26" pathLength="100" />
-          <rect class="auth-beam__t3" x="0" y="0" width="100%" height="100%" rx="26" pathLength="100" />
-          <rect class="auth-beam__t4" x="0" y="0" width="100%" height="100%" rx="26" pathLength="100" />
-          <rect class="auth-beam__t5" x="0" y="0" width="100%" height="100%" rx="26" pathLength="100" />
-          <rect class="auth-beam__t6" x="0" y="0" width="100%" height="100%" rx="26" pathLength="100" />
-          <rect class="auth-beam__t7" x="0" y="0" width="100%" height="100%" rx="26" pathLength="100" />
-          <rect class="auth-beam__t8" x="0" y="0" width="100%" height="100%" rx="26" pathLength="100" />
+          <defs>
+            <linearGradient id="authBeamGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" :stop-color="beamPreset.stops[0]" />
+              <stop offset="50%" :stop-color="beamPreset.stops[1]" />
+              <stop offset="100%" :stop-color="beamPreset.stops[2]" />
+            </linearGradient>
+          </defs>
+          <rect
+            class="auth-beam__line"
+            x="0"
+            y="0"
+            width="100%"
+            height="100%"
+            rx="26"
+            pathLength="100"
+            stroke="url(#authBeamGradient)"
+          />
         </svg>
 
         <div class="login-eyes"><EyeRobot /></div>
