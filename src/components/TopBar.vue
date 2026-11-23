@@ -136,7 +136,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
       <DropdownMenu :items="userOptions" @select="onUser">
         <template #trigger>
           <button class="user">
-            <span class="grid h-[30px] w-[30px] place-items-center rounded-full bg-primary text-[12px] font-semibold text-primary-foreground">
+            <span class="user-initial">
               {{ userInitial }}
             </span>
             <span class="user-meta"><b>{{ userName }}</b><i>{{ userRole }}</i></span>

@@ -25,11 +25,12 @@ interface BeamPreset {
 
 const BEAM_PRESETS: BeamPreset[] = [
   { key: 'ocean', name: 'Ocean', stops: ['#1677ff', '#36cfc9', '#95de64'] },
-  { key: 'aurora', name: 'Aurora', stops: ['#22d3ee', '#818cf8', '#e879f9'] },
-  { key: 'nebula', name: 'Nebula', stops: ['#6366f1', '#a855f7', '#f472b6'] }
+  { key: 'aurora', name: 'Aurora', stops: ['#7c3aed', '#06b6d4', '#67e8f9'] },
+  { key: 'nebula', name: 'Nebula', stops: ['#2f54eb', '#722ed1', '#ff85c0'] }
 ]
 
-const beamPreset = BEAM_PRESETS[0]
+/* 默认 vivid 极光：紫 → 青 → 浅青，跨度更大 */
+const beamPreset = BEAM_PRESETS[1]
 
 /* WebGL2 与指针能力探测：触屏 / 不支持时回退静态渐变 */
 const holoReady = ref(false)
