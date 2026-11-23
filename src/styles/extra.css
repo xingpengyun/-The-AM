@@ -375,45 +375,70 @@
     inset 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
 
-/* 卡片外沿流光：单段窄光束沿描边环行（参考图：细线、双端渐隐、无大范围光晕） */
-@property --glow-angle {
-  syntax: "<angle>";
-  inherits: false;
-  initial-value: 0deg;
-}
-.auth-card::before {
-  content: "";
+/* 卡片外沿流光：SVG 描边光束沿轮廓环行，任何位置粗细一致 */
+.auth-beam {
   position: absolute;
-  inset: 0;
-  padding: 1.5px;
-  border-radius: inherit;
+  inset: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  overflow: visible;
   pointer-events: none;
-  background: conic-gradient(
-    from var(--glow-angle),
-    rgba(132, 204, 22, 0) 212deg,
-    rgba(132, 204, 22, 0.12) 228deg,
-    rgba(132, 204, 22, 0.32) 242deg,
-    #84cc16 256deg,
-    #6ee7b7 272deg,
-    #10b981 288deg,
-    #0d9488 300deg,
-    rgba(13, 148, 136, 0.22) 312deg,
-    rgba(13, 148, 136, 0) 326deg
-  );
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  filter: drop-shadow(0 0 3px rgba(16, 185, 129, 0.45));
-  animation: auth-glow 8s linear infinite;
+  filter: drop-shadow(0 0 2.5px rgba(16, 185, 129, 0.45));
 }
-@keyframes auth-glow {
-  to {
-    --glow-angle: 360deg;
-  }
+.auth-beam rect {
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  animation-duration: 8s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+/* 彗星尾：同一条路径上叠四段，终点对齐，亮度从尾到头递增 */
+.auth-beam__tail-1 {
+  stroke: #0d9488;
+  opacity: 0.22;
+  stroke-dasharray: 20 80;
+  stroke-dashoffset: 0;
+  animation-name: beam-run-1;
+}
+.auth-beam__tail-2 {
+  stroke: #0d9488;
+  opacity: 0.5;
+  stroke-dasharray: 14 86;
+  stroke-dashoffset: -6;
+  animation-name: beam-run-2;
+}
+.auth-beam__mid {
+  stroke: #10b981;
+  opacity: 0.9;
+  stroke-dasharray: 9 91;
+  stroke-dashoffset: -11;
+  animation-name: beam-run-3;
+}
+.auth-beam__head {
+  stroke: #a7f3d0;
+  stroke-dasharray: 4 96;
+  stroke-dashoffset: -16;
+  animation-name: beam-run-4;
+}
+@keyframes beam-run-1 {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -100; }
+}
+@keyframes beam-run-2 {
+  from { stroke-dashoffset: -6; }
+  to { stroke-dashoffset: -106; }
+}
+@keyframes beam-run-3 {
+  from { stroke-dashoffset: -11; }
+  to { stroke-dashoffset: -111; }
+}
+@keyframes beam-run-4 {
+  from { stroke-dashoffset: -16; }
+  to { stroke-dashoffset: -116; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .auth-card::before {
+  .auth-beam rect {
     animation: none;
   }
 }
