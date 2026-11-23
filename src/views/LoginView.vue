@@ -48,7 +48,7 @@ const errors = reactive({ account: '', password: '' })
 
 /* 玻璃卡里的输入框：颜色全部走 Tailwind 令牌，不外露色值 */
 const fieldClass =
-  'h-11 rounded-[10px] border-login-border bg-login-field pl-9 text-[13px] text-login-ink placeholder:text-login-placeholder hover:border-login-border-hover focus-visible:border-login-focus focus-visible:ring-login-ring'
+  'h-12 rounded-[11px] border-login-border bg-login-field pl-9 text-[13.5px] text-login-ink placeholder:text-login-placeholder hover:border-login-border-hover focus-visible:border-login-focus focus-visible:ring-login-ring'
 
 onMounted(async () => {
   const coarse = window.matchMedia('(hover: none) and (pointer: coarse)').matches
@@ -194,7 +194,7 @@ function forgot(): void {
           <p>登录后进入运营工作台</p>
         </div>
 
-        <form class="mt-[22px] space-y-3" novalidate @submit.prevent="submit">
+        <form class="mt-[24px] space-y-3.5" novalidate @submit.prevent="submit">
           <div>
             <div class="relative">
               <Ico
@@ -256,7 +256,7 @@ function forgot(): void {
 
           <Alert v-if="errorText" variant="error" class="mb-3">{{ errorText }}</Alert>
 
-          <Button type="submit" size="lg" block :loading="loading">
+          <Button type="submit" size="lg" block class="auth-submit" :loading="loading">
             {{ loading ? '登录中…' : '登录' }}
           </Button>
         </form>
