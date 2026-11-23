@@ -374,6 +374,64 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.95),
     inset 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
+
+/* 卡片外沿流光：锥形渐变 + 环形遮罩，光带贴在描边外侧，不进入卡片内部 */
+@property --glow-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+.auth-card {
+  --glow-angle: 0deg;
+}
+.auth-card::before,
+.auth-card::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  background: conic-gradient(
+    from var(--glow-angle),
+    rgba(16, 185, 129, 0) 0deg,
+    rgba(16, 185, 129, 0) 228deg,
+    rgba(16, 185, 129, 0.55) 268deg,
+    #10b981 292deg,
+    #6ee7b7 300deg,
+    #10b981 308deg,
+    rgba(16, 185, 129, 0.5) 330deg,
+    rgba(16, 185, 129, 0) 360deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: auth-glow 8s linear infinite;
+}
+/* 贴边窄亮带 */
+.auth-card::before {
+  inset: -1.5px;
+  padding: 1.5px;
+  border-radius: calc(var(--radius) + 3.5px);
+}
+/* 一层薄柔光，避免多层 blur 影响性能 */
+.auth-card::after {
+  inset: -7px;
+  padding: 7px;
+  border-radius: calc(var(--radius) + 9px);
+  filter: blur(7px);
+  opacity: 0.5;
+}
+@keyframes auth-glow {
+  to {
+    --glow-angle: 360deg;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-card::before,
+  .auth-card::after {
+    animation: none;
+  }
+}
+
 /* 不支持 backdrop-filter：退化为浅薄荷实底，深色文字仍清晰 */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .auth-card {
