@@ -94,11 +94,11 @@ interface SupplyRoute {
 const SUPPLY_ROUTES: SupplyRoute[] = [
   {
     from: '北京',
-    to: ['黑龙江', '吉林', '内蒙古', '新疆', '青海', '宁夏', '甘肃', '山东', '天津', '陕西']
+    to: ['黑龙江', '吉林', '内蒙古', '新疆', '青海', '宁夏', '甘肃', '山东', '天津']
   },
   {
     from: '上海',
-    to: ['湖北', '河南', '湖南', '西藏', '重庆', '贵州', '江西', '福建', '浙江', '安徽', '江苏']
+    to: ['湖北', '河南', '湖南', '西藏', '重庆', '贵州', '江西', '福建', '浙江', '安徽', '江苏', '陕西']
   },
   { from: '广东', to: ['广西'] }
 ]
@@ -242,7 +242,7 @@ function buildOption(): EChartsCoreOption {
       roam: false,
       aspectScale: CHINA_ASPECT_SCALE,
       layoutCenter: ['50%', '50%'],
-      layoutSize: '96%',
+      layoutSize: '106%',
       itemStyle: {
         areaColor: '#F6F7FA',
         borderColor: '#E1E5ED',
