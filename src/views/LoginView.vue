@@ -5,7 +5,7 @@ import type { FormInst, FormRules } from 'naive-ui'
 import { useMessage } from 'naive-ui'
 import Ico from '@/components/Ico.vue'
 import EyeRobot from '@/components/EyeRobot.vue'
-import { ensureSeeded, getBootstrapHint, login } from '@/utils/auth'
+import { ensureSeeded, login } from '@/utils/auth'
 
 /* Vue Bits 官方 HoloMosaic（WebGL2）按需加载，避免进入首屏 chunk */
 const HoloMosaic = defineAsyncComponent(() => import('@/components/HoloMosaic.vue'))
@@ -20,7 +20,6 @@ const holoReady = ref(false)
 const formRef = ref<FormInst | null>(null)
 const loading = ref(false)
 const errorText = ref('')
-const bootstrap = ref<{ username: string; password: string } | null>(null)
 
 const model = reactive({
   account: 'admin',
@@ -38,7 +37,6 @@ onMounted(async () => {
   const probe = document.createElement('canvas')
   holoReady.value = !coarse && Boolean(probe.getContext('webgl2'))
   await ensureSeeded()
-  bootstrap.value = getBootstrapHint()
 })
 
 async function submit(): Promise<void> {
@@ -125,7 +123,6 @@ function forgot(): void {
       <div class="auth-hero-body">
         <div class="auth-kicker"><Ico name="sparkle" :size="12" /> BONBON BUSINESS</div>
         <h1>星随光动，<br />万店共生</h1>
-        <p>门店分布、阶段进度与待办协同，集中在一个工作台里。</p>
 
         <ul class="auth-points">
           <li>
@@ -199,12 +196,6 @@ function forgot(): void {
             {{ loading ? '登录中…' : '登录' }}
           </n-button>
         </n-form>
-
-        <p v-if="bootstrap" class="auth-hint">
-          默认账号 <b>{{ bootstrap.username }}</b> ／ 初始密码 <b>{{ bootstrap.password }}</b>
-        </p>
-        <p v-else class="auth-hint">请使用系统管理员分配的账号登录</p>
-        <p class="auth-notice">仅用于演示与内部试用。纯前端校验可被本地篡改，不能作为生产环境鉴权。</p>
       </div>
     </section>
   </div>
