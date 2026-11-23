@@ -137,8 +137,8 @@
   font-variant-numeric: tabular-nums;
 }
 .stage-chip:hover {
-  background: #F5F8FE;
-  border-color: rgba(59, 87, 232, 0.28);
+  background: #F2FAF6;
+  border-color: rgba(16, 185, 129, 0.3);
   color: var(--brand-deep);
 }
 .stage-chip.dim {
@@ -148,7 +148,7 @@
   background: var(--brand);
   border-color: var(--brand);
   color: #FFFFFF;
-  box-shadow: 0 8px 18px -12px rgba(59, 87, 232, 0.9);
+  box-shadow: 0 8px 18px -12px rgba(14, 123, 104, 0.85);
 }
 .stage-chip.on b {
   color: rgba(255, 255, 255, 0.72);
@@ -587,33 +587,6 @@
   }
 }
 
-/* 首次登录修改密码弹窗 */
-.pwd-card {
-  width: min(420px, calc(100vw - 32px));
-  padding: 28px 26px 20px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-}
-.pwd-card h3 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: var(--ink);
-}
-.pwd-sub {
-  margin: 8px 0 18px;
-  font-size: 12px;
-  line-height: 1.7;
-  color: var(--ink-3);
-}
-.pwd-later {
-  display: block;
-  margin: 12px auto 0;
-}
-
 /* 窄屏单列：隐藏马赛克与文案，只留居中的实心卡片 */
 @media (max-width: 900px) {
   .auth-holo,
@@ -639,3 +612,4 @@
     transition: none;
   }
 }
+

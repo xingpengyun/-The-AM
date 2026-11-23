@@ -45,7 +45,6 @@ export interface StoredAccount {
   salt: string
   hash: string
   iterations: number
-  mustChangePassword: boolean
   createdAt: string
   updatedAt: string
 }
@@ -57,7 +56,6 @@ export interface Session {
   role: StoredAccount['role']
   issuedAt: number
   expiresAt: number
-  mustChangePassword: boolean
   remember: boolean
 }
 
@@ -151,17 +149,14 @@ export async function ensureSeeded(): Promise<void> {
     salt,
     hash: await deriveHash(DEFAULT_PASSWORD, salt, DEFAULT_ITERATIONS),
     iterations: DEFAULT_ITERATIONS,
-    mustChangePassword: true,
     createdAt: now,
     updatedAt: now
   }
   writeAccounts([account])
 }
 
-/* 初始密码仍未被修改时，登录页才展示提示 */
+/* 登录页展示默认演示账号提示 */
 export function getBootstrapHint(): { username: string; password: string } | null {
-  const account = findAccount(DEFAULT_USERNAME)
-  if (!account || !account.mustChangePassword) return null
   return { username: DEFAULT_USERNAME, password: DEFAULT_PASSWORD }
 }
 
@@ -253,7 +248,6 @@ export async function login(
     role: account.role,
     issuedAt: now,
     expiresAt: now + (remember ? SESSION_TTL_REMEMBER_MS : SESSION_TTL_MS),
-    mustChangePassword: account.mustChangePassword,
     remember
   }
   persistSession(session)
@@ -287,43 +281,4 @@ export function clearSession(): void {
 
 export function logout(): void {
   clearSession()
-}
-
-/* 修改密码：校验旧密码后重新生成 salt + 哈希，并刷新会话标记 */
-export async function changePassword(
-  username: string,
-  currentPassword: string,
-  nextPassword: string
-): Promise<void> {
-  const accounts = readAccounts()
-  const index = accounts.findIndex((a) => a.username.toLowerCase() === username.trim().toLowerCase())
-  if (index < 0) throw new AuthError('账号不存在')
-
-  const account = accounts[index]
-  const currentHash = await deriveHash(currentPassword, account.salt, account.iterations)
-  if (currentHash !== account.hash) throw new AuthError('当前密码不正确')
-
-  const saltBytes = new Uint8Array(SALT_BYTES)
-  crypto.getRandomValues(saltBytes)
-  const salt = toBase64(saltBytes)
-  accounts[index] = {
-    ...account,
-    salt,
-    hash: await deriveHash(nextPassword, salt, DEFAULT_ITERATIONS),
-    iterations: DEFAULT_ITERATIONS,
-    mustChangePassword: false,
-    updatedAt: new Date().toISOString()
-  }
-  writeAccounts(accounts)
-
-  const session = getSession()
-  if (session && session.username === account.username) {
-    persistSession({ ...session, mustChangePassword: false })
-  }
-}
-
-export function passwordPolicyError(password: string): string | null {
-  if (password.length < 8) return '密码至少 8 位'
-  if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) return '密码需同时包含字母和数字'
-  return null
 }

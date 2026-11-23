@@ -5,7 +5,6 @@ import { zhCN, dateZhCN } from 'naive-ui'
 import SideNav from '@/components/SideNav.vue'
 import TopBar from '@/components/TopBar.vue'
 import StageAxis from '@/components/StageAxis.vue'
-import ChangePasswordModal from '@/components/ChangePasswordModal.vue'
 import { themeOverrides } from '@/config/theme'
 import { stageOfParam } from '@/data/org'
 
@@ -55,9 +54,6 @@ router.beforeEach((to, from) => {
           </main>
         </div>
       </div>
-
-      <!-- 首次登录后引导修改默认密码（纯前端演示） -->
-      <ChangePasswordModal v-if="!isAuthPage" />
     </n-message-provider>
   </n-config-provider>
 </template>

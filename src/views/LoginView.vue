@@ -204,7 +204,7 @@ function forgot(): void {
           默认账号 <b>{{ bootstrap.username }}</b> ／ 初始密码 <b>{{ bootstrap.password }}</b>
         </p>
         <p v-else class="auth-hint">请使用系统管理员分配的账号登录</p>
-        <p class="auth-notice">仅用于演示与内部试用：请在首次登录后立即修改初始密码。纯前端校验可被本地篡改，不能作为生产环境鉴权。</p>
+        <p class="auth-notice">仅用于演示与内部试用。纯前端校验可被本地篡改，不能作为生产环境鉴权。</p>
       </div>
     </section>
   </div>

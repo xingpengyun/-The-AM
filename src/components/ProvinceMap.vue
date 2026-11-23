@@ -40,8 +40,8 @@ const geoSource = geoSourceRaw as unknown as GeoCollection
 const MAP_VIEW_W = 840
 const MAP_VIEW_H = 600
 const MAP_PAD = 24
-/* 门店数多色分级：浅蓝 → 中蓝 → 品牌蓝，明度统一递减 */
-const MAP_STOPS = ['#EEF3FF', '#DBE4FF', '#C4D0FF', '#AAB7FF', '#8E9BFF', '#7C8CFA']
+/* 门店数多色分级：浅绿 → 翡翠绿，明度统一递减 */
+const MAP_STOPS = ['#EAF7F1', '#D5F0E3', '#B7E6D2', '#8FD9BE', '#5FC9A4', '#2FB98C']
 /* 东部紧凑省份的标签外移，配合引线避免数字互相叠压 */
 const MAP_LABEL_OFFSETS: Record<string, [number, number]> = {
   北京: [-30, -22], 天津: [30, 7], 上海: [39, -5], 香港: [27, 20],
@@ -115,7 +115,7 @@ function projectPoint(lng: number, lat: number): [number, number] {
 }
 
 function mapFillOf(stores: number): string {
-  if (!stores) return '#F5F2FB'
+  if (!stores) return '#F1F8F4'
   const t = Math.pow(Math.max(0, Math.min(1, stores / provinceStoreMax)), 0.55)
   const pos = t * (MAP_STOPS.length - 1)
   const i = Math.min(MAP_STOPS.length - 2, Math.floor(pos))
@@ -324,7 +324,7 @@ onMounted(initMap)
               :class="{ selected: selectedProvince && selectedProvince.name === p.name }"
               :d="p.d"
               :data-name="p.name"
-              :fill="selectedProvince && selectedProvince.name === p.name ? '#4F6EF7' : p.fill"
+              :fill="selectedProvince && selectedProvince.name === p.name ? '#0E7B68' : p.fill"
               @click="selectProvinceByName(p.name)"
               @mousemove="onProvinceMove(p, $event)"
               @mouseleave="onProvinceLeave"
