@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * 全局设计令牌（单一色值来源）
+ * ------------------------------------------------------------------
+ * 组件里只引用语义化类名 / CSS 变量，不再散落十六进制色值。
+ * 主色沿用登录页那套翡翠绿；卡片糖果色只做浅底点缀。
+ */
+@layer base {
+  :root {
+    --background: #fafcfb;
+    --foreground: #18261f;
+
+    --card: #ffffff;
+    --card-foreground: #18261f;
+    --popover: #ffffff;
+    --popover-foreground: #18261f;
+
+    --primary: #0e7b68;
+    --primary-hover: #0f8571;
+    --primary-active: #0b6b5b;
+    --primary-foreground: #ffffff;
+
+    --secondary: #e3f5ee;
+    --secondary-foreground: #0a6656;
+    --muted: #f4faf6;
+    --muted-foreground: #7c8f87;
+    --accent: #f2faf6;
+    --accent-foreground: #0b7f60;
+
+    --destructive: #d93b79;
+    --destructive-foreground: #ffffff;
+    --destructive-soft: #fce8f0;
+    --destructive-ink: #991b1b;
+
+    --border: #e8f2ed;
+    --input: #e8f2ed;
+    --input-hover: #b9dcd1;
+    --ring: #10b981;
+
+    /* 卡片糖果色：浅底 + 深一点的文字色，保证对比度 */
+    --candy-mint: #e2f7f0;
+    --candy-mint-ink: #0b7f60;
+    --candy-peach: #fdede4;
+    --candy-peach-ink: #b8541f;
+    --candy-lemon: #fbf1d8;
+    --candy-lemon-ink: #8f6200;
+    --candy-sakura: #fce8f0;
+    --candy-sakura-ink: #b32a63;
+    --candy-lavender: #efeafe;
+    --candy-lavender-ink: #5b4bb7;
+    --candy-sky: #e6f3fd;
+    --candy-sky-ink: #1d6fa5;
+
+    /* 登录页玻璃卡上的输入控件 */
+    --login-field: rgba(255, 255, 255, 0.62);
+    --login-field-strong: rgba(255, 255, 255, 0.82);
+    --login-border: rgba(6, 60, 44, 0.16);
+    --login-border-hover: rgba(6, 60, 44, 0.26);
+    --login-ink: #0a2a20;
+    --login-placeholder: rgba(9, 40, 30, 0.62);
+    --login-focus: #059669;
+    --login-ring: rgba(5, 150, 105, 0.22);
+
+    --shadow-card: 0 2px 4px rgba(12, 48, 38, 0.05), 0 30px 60px -42px rgba(14, 72, 58, 0.28);
+    --shadow-pop: 0 18px 38px -24px rgba(12, 48, 38, 0.38), 0 2px 6px rgba(12, 48, 38, 0.06);
+    --shadow-button: 0 10px 20px -14px rgba(6, 50, 37, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  }
+
+  * {
+    border-color: var(--border);
+  }
+}

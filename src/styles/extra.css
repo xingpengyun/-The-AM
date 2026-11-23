@@ -380,87 +380,8 @@
     background: #EDF7F2;
   }
 }
-.auth-card .n-input {
-  --n-color: rgba(255, 255, 255, 0.62) !important;
-  --n-color-focus: rgba(255, 255, 255, 0.82) !important;
-  --n-text-color: #0A2A20 !important;
-  --n-placeholder-color: rgba(9, 40, 30, 0.68) !important;
-  --n-caret-color: #047857 !important;
-  --n-icon-color: rgba(9, 40, 30, 0.6) !important;
-  --n-icon-color-hover: #0A2A20 !important;
-  --n-icon-color-pressed: #047857 !important;
-  --n-border: 1px solid rgba(6, 60, 44, 0.16) !important;
-  --n-border-hover: 1px solid rgba(6, 60, 44, 0.26) !important;
-  --n-border-focus: 1px solid #059669 !important;
-  --n-border-error: 1px solid #DC2626 !important;
-  --n-border-focus-error: 1px solid #EF4444 !important;
-  --n-box-shadow-focus-error: 0 0 0 3px rgba(220, 38, 38, 0.16) !important;
-  --n-box-shadow-focus: 0 0 0 3px rgba(5, 150, 105, 0.18) !important;
-  --n-border-radius: 10px;
-  --n-height: 44px !important;
-  background-color: rgba(255, 255, 255, 0.62);
-}
-/* 输入框前后缀图标：深绿灰，避免继承主题紫灰 */
-.auth-card .n-input__prefix,
-.auth-card .n-input__prefix *,
-.auth-card .n-input__suffix,
-.auth-card .n-input__suffix * {
-  color: rgba(9, 40, 30, 0.6) !important;
-}
-.auth-card .n-checkbox {
-  --n-text-color: #0A2A20 !important;
-  --n-color-checked: #059669 !important;
-  --n-border-checked: 1px solid #059669 !important;
-  --n-border-focus: 1px solid #059669 !important;
-  --n-box-shadow-focus: 0 0 0 2px rgba(52, 211, 153, 0.28) !important;
-  --n-check-mark-color: #FFFFFF !important;
-}
-/* 主按钮：翡翠绿实底（取自马赛克块 #0E7B68），白字 */
-.auth-card .n-button.n-button--primary-type {
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 10px;
-  --n-border-radius: 10px;
-  --n-height: 44px !important;
-  --n-border-focus: 1px solid transparent !important;
-  --n-box-shadow-focus: none !important;
-  --n-text-color: #FFFFFF !important;
-  background-color: #0E7B68;
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 46%, rgba(0, 0, 0, 0.07) 100%);
-  color: #FFFFFF;
-  font-weight: 650;
-  letter-spacing: 0.06em;
-  text-shadow: 0 1px 1px rgba(3, 25, 20, 0.3);
-  box-shadow:
-    0 10px 20px -14px rgba(6, 50, 37, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
-  transition: background-color 0.24s var(--ease), box-shadow 0.24s var(--ease), transform 0.12s var(--ease);
-}
-.auth-card .n-button.n-button--primary-type:hover {
-  background-color: #0F8571;
-  box-shadow:
-    0 12px 24px -14px rgba(6, 50, 37, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-.auth-card .n-button.n-button--primary-type:active {
-  transform: translateY(1px);
-  background-color: #0B6B5B;
-  box-shadow:
-    0 5px 12px -12px rgba(6, 50, 37, 0.5),
-    inset 0 2px 4px rgba(0, 20, 15, 0.22);
-}
-.auth-card .n-button.n-button--primary-type:focus-visible {
-  outline: 2px solid #10B981;
-  outline-offset: 3px;
-}
-/* 清掉浏览器/Naive 默认的蓝色聚焦描边与状态边框 */
-.auth-card .n-button.n-button--primary-type,
-.auth-card .n-button.n-button--primary-type:focus:not(:focus-visible) {
-  outline: none;
-}
-.auth-card .n-button .n-button__border,
-.auth-card .n-button .n-button__state-border {
-  display: none !important;
-}
+/* 登录输入框改由 shadcn Input + 令牌控制 */
+
 .auth-card-head h2 {
   margin: 0;
   font-size: 28px;
@@ -473,9 +394,7 @@
   font-size: 12px;
   color: rgba(10, 42, 32, 0.7);
 }
-.auth-card .n-form {
-  margin-top: 22px;
-}
+/* 登录表单间距由组件类控制 */
 .auth-row {
   display: flex;
   align-items: center;
@@ -497,22 +416,6 @@
   color: #065F46;
   text-decoration: underline;
   text-underline-offset: 2px;
-}
-.auth-error {
-  --n-color: rgba(220, 38, 38, 0.08) !important;
-  --n-text-color: #991B1B !important;
-  --n-content-text-color: #991B1B !important;
-  --n-title-text-color: #991B1B !important;
-  --n-icon-color: #DC2626 !important;
-  --n-border: 1px solid rgba(220, 38, 38, 0.28) !important;
-  margin-bottom: 12px;
-  border-radius: 10px;
-}
-/* 校验提示：浅玻璃卡上用深红，保证在白亮底上可读 */
-.auth-card .n-form-item {
-  --n-feedback-text-color: rgba(10, 42, 32, 0.7) !important;
-  --n-feedback-text-color-error: #B91C1C !important;
-  --n-feedback-text-color-warning: #B45309 !important;
 }
 /* 登录页背景：全息马赛克（含无 WebGL / 触屏时的静态降级底） */
 .auth-holo-fallback {

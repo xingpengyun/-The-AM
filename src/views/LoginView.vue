@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { FormInst, FormRules } from 'naive-ui'
-import { useMessage } from 'naive-ui'
 import Ico from '@/components/Ico.vue'
 import EyeRobot from '@/components/EyeRobot.vue'
+import { Alert } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Input } from '@/components/ui/input'
+import { toast } from '@/composables/useToast'
 import { ensureSeeded, login } from '@/utils/auth'
 
 /* Vue Bits 官方 HoloMosaic（WebGL2）按需加载，避免进入首屏 chunk */
@@ -12,12 +15,10 @@ const HoloMosaic = defineAsyncComponent(() => import('@/components/HoloMosaic.vu
 
 const route = useRoute()
 const router = useRouter()
-const message = useMessage()
 
 /* WebGL2 与指针能力探测：触屏 / 不支持时回退静态渐变 */
 const holoReady = ref(false)
-
-const formRef = ref<FormInst | null>(null)
+const showPassword = ref(false)
 const loading = ref(false)
 const errorText = ref('')
 
@@ -27,10 +28,11 @@ const model = reactive({
   remember: true
 })
 
-const rules: FormRules = {
-  account: [{ required: true, message: '请输入账号', trigger: ['input', 'blur'] }],
-  password: [{ required: true, message: '请输入密码', trigger: ['input', 'blur'] }]
-}
+const errors = reactive({ account: '', password: '' })
+
+/* 玻璃卡里的输入框：颜色全部走 Tailwind 令牌，不外露色值 */
+const fieldClass =
+  'h-11 rounded-[10px] border-login-border bg-login-field pl-9 text-[13px] text-login-ink placeholder:text-login-placeholder hover:border-login-border-hover focus-visible:border-login-focus focus-visible:ring-login-ring'
 
 onMounted(async () => {
   const coarse = window.matchMedia('(hover: none) and (pointer: coarse)').matches
@@ -39,20 +41,22 @@ onMounted(async () => {
   await ensureSeeded()
 })
 
+function validate(): boolean {
+  errors.account = model.account.trim() ? '' : '请输入账号'
+  errors.password = model.password ? '' : '请输入密码'
+  return !errors.account && !errors.password
+}
+
 async function submit(): Promise<void> {
   if (loading.value) return
   errorText.value = ''
-  try {
-    await formRef.value?.validate()
-  } catch {
-    return
-  }
+  if (!validate()) return
 
   loading.value = true
   try {
     /* 本地校验：PBKDF2-SHA256 + 每账号独立 salt，见 utils/auth.ts 顶部说明 */
     const session = await login(model.account, model.password, model.remember)
-    message.success(`欢迎回来，${session.displayName}`)
+    toast(`欢迎回来，${session.displayName}`, 'success')
     const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/home'
     await router.replace(redirect)
   } catch (err) {
@@ -63,7 +67,7 @@ async function submit(): Promise<void> {
 }
 
 function forgot(): void {
-  message.info('演示环境请在代码中重置本地账号，或联系系统管理员', { duration: 2600 })
+  toast('演示环境请在代码中重置本地账号，或联系系统管理员', 'info', 2600)
 }
 </script>
 
@@ -153,49 +157,72 @@ function forgot(): void {
           <p>登录后进入运营工作台</p>
         </div>
 
-        <n-form
-          ref="formRef"
-          :model="model"
-          :rules="rules"
-          :show-label="false"
-          size="large"
-          @keyup.enter="submit"
-        >
-          <n-form-item path="account">
-            <n-input
-              v-model:value="model.account"
-              placeholder="账号"
-              :input-props="{ autocomplete: 'username' }"
-            >
-              <template #prefix><Ico name="user" :size="15" /></template>
-            </n-input>
-          </n-form-item>
+        <form class="mt-[22px] space-y-3" novalidate @submit.prevent="submit">
+          <div>
+            <div class="relative">
+              <Ico
+                name="user"
+                :size="15"
+                class="pointer-events-none absolute left-3 top-1/2 z-[1] -translate-y-1/2 text-login-placeholder"
+              />
+              <Input
+                v-model="model.account"
+                :class="fieldClass"
+                placeholder="账号"
+                autocomplete="username"
+                aria-label="账号"
+                @update:model-value="errors.account = ''"
+              />
+            </div>
+            <p v-if="errors.account" class="mt-1.5 text-[11px] font-medium text-destructive-ink">
+              {{ errors.account }}
+            </p>
+          </div>
 
-          <n-form-item path="password">
-            <n-input
-              v-model:value="model.password"
-              type="password"
-              show-password-on="click"
-              placeholder="密码"
-              :input-props="{ autocomplete: 'current-password' }"
-            >
-              <template #prefix><Ico name="shield" :size="15" /></template>
-            </n-input>
-          </n-form-item>
+          <div>
+            <div class="relative">
+              <Ico
+                name="shield"
+                :size="15"
+                class="pointer-events-none absolute left-3 top-1/2 z-[1] -translate-y-1/2 text-login-placeholder"
+              />
+              <Input
+                v-model="model.password"
+                :type="showPassword ? 'text' : 'password'"
+                :class="`${fieldClass} pr-14`"
+                placeholder="密码"
+                autocomplete="current-password"
+                aria-label="密码"
+                @update:model-value="errors.password = ''"
+              />
+              <button
+                type="button"
+                class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-login-placeholder transition-colors hover:text-login-ink"
+                :aria-label="showPassword ? '隐藏密码' : '显示密码'"
+                @click="showPassword = !showPassword"
+              >
+                {{ showPassword ? '隐藏' : '显示' }}
+              </button>
+            </div>
+            <p v-if="errors.password" class="mt-1.5 text-[11px] font-medium text-destructive-ink">
+              {{ errors.password }}
+            </p>
+          </div>
 
           <div class="auth-row">
-            <n-checkbox v-model:checked="model.remember">记住我</n-checkbox>
+            <label class="flex cursor-pointer items-center gap-2 text-[12px] text-login-ink">
+              <Checkbox v-model="model.remember" />
+              记住我
+            </label>
             <button class="auth-link" type="button" @click="forgot">忘记密码？</button>
           </div>
 
-          <n-alert v-if="errorText" type="error" :bordered="false" class="auth-error">
-            {{ errorText }}
-          </n-alert>
+          <Alert v-if="errorText" variant="error" class="mb-3">{{ errorText }}</Alert>
 
-          <n-button type="primary" size="large" block attr-type="button" :loading="loading" @click="submit">
+          <Button type="submit" size="lg" block :loading="loading">
             {{ loading ? '登录中…' : '登录' }}
-          </n-button>
-        </n-form>
+          </Button>
+        </form>
       </div>
     </section>
   </div>

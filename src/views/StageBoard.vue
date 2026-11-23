@@ -2,6 +2,8 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import Ico from '@/components/Ico.vue'
+import { Badge } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card'
 import { departmentOfParam, stageOfParam } from '@/data/org'
 
 const route = useRoute()
@@ -17,15 +19,15 @@ const stage = computed(() => stageOfParam(route.params.stage))
         <div class="page-kicker"><Ico name="sparkle" :size="10" /> BONBON BUSINESS · {{ dept.name }}</div>
         <div class="page-title-row">
           <h1>{{ stage ? `${stage.no} ${stage.name}` : '阶段看板' }}</h1>
-          <span class="chip-soft">{{ dept.name }} · 阶段看板</span>
+          <Badge variant="lavender">{{ dept.name }} · 阶段看板</Badge>
         </div>
       </div>
     </div>
 
-    <section class="panel placeholder">
+    <Card tone="lavender" class="placeholder">
       <div class="ph-art"><Ico name="inbox" :size="28" /></div>
       <h2>{{ stage ? `${stage.no} ${stage.name}` : '阶段看板' }}</h2>
       <p>该模块待业务接入</p>
-    </section>
+    </Card>
   </div>
 </template>

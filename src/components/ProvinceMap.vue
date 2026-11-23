@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useMessage } from 'naive-ui'
 import Ico from '@/components/Ico.vue'
+import { toast } from '@/composables/useToast'
 import geoSourceRaw from '@/data/china-geo.json'
 import {
   fmtNum,
@@ -24,8 +24,6 @@ import type {
   MapTip,
   ProvinceStoreInfo
 } from '@/types/domain'
-
-const message = useMessage()
 
 const mapPlotEl = ref<HTMLDivElement | null>(null)
 const mapState = ref<MapState>('loading')
@@ -253,7 +251,7 @@ function selectProvinceByName(name: string): void {
   const info = provinceStoreInfo(name)
   selectedProvince.value = info
   mapTip.value = null
-  message.info(`${name} · ${fmtNum(info.stores)} 家门店`, { duration: 1800 })
+  toast(`${name} · ${fmtNum(info.stores)} 家门店`, 'info', 1800)
 }
 
 function clearProvinceSelection(): void {

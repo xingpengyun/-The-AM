@@ -14,7 +14,7 @@
   --brand: #0E7B68;
   --brand-deep: #0A6656;
   --brand-soft: #E3F5EE;
-  /* 导航选中胶囊：加深的蓝紫渐变 */
+  /* 导航选中胶囊：翡翠绿渐变 */
   --nav-grad-from: #0E7B68;
   --nav-grad-to: #10B981;
   --nav-active-from: #0E7B68;
@@ -235,9 +235,7 @@ button { font-family: inherit; }
   -webkit-backdrop-filter: blur(18px) saturate(112%);
 }
 .crumb { min-width: 0; }
-.crumb .n-breadcrumb { font-size: 12px; }
 .topsearch { flex: 1; max-width: 380px; margin-left: 6px; }
-.topsearch .n-input { background: #F4FAF7; }
 .kbd {
   padding: 1px 5px; border: 1px solid var(--line); border-radius: 4px;
   background: #F4FAF7; color: var(--ink-3);
@@ -469,7 +467,6 @@ button { font-family: inherit; }
 .foot { margin-top: 22px; font-size: 10.5px; color: var(--ink-3); text-align: center; letter-spacing: .02em; }
 
 /* ------------------------------ 组件微调 ------------------------------ */
-.n-button { font-weight: 600; }
 
 /* ------------------------------ 响应式 ------------------------------ */
 @media (min-width: 1680px) {

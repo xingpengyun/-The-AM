@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRoute, useRouter, type RouteLocationNormalized } from 'vue-router'
-import { zhCN, dateZhCN } from 'naive-ui'
 import SideNav from '@/components/SideNav.vue'
 import TopBar from '@/components/TopBar.vue'
 import StageAxis from '@/components/StageAxis.vue'
-import { themeOverrides } from '@/config/theme'
+import Toaster from '@/components/ui/toast/Toaster.vue'
 import { stageOfParam } from '@/data/org'
 
 const route = useRoute()
@@ -33,27 +32,25 @@ router.beforeEach((to, from) => {
 </script>
 
 <template>
-  <n-config-provider :theme-overrides="themeOverrides" :locale="zhCN" :date-locale="dateZhCN">
-    <n-message-provider>
-      <RouterView v-if="isAuthPage" v-slot="{ Component, route }">
-        <component :is="Component" :key="route.fullPath" />
-      </RouterView>
+  <RouterView v-if="isAuthPage" v-slot="{ Component, route }">
+    <component :is="Component" :key="route.fullPath" />
+  </RouterView>
 
-      <div v-else class="shell">
-        <SideNav />
-        <div class="main">
-          <TopBar />
-          <StageAxis v-if="!isHome" />
-          <main class="content">
-            <RouterView v-slot="{ Component, route }">
-              <Transition :name="`page-${pageDir}`" mode="out-in">
-                <component :is="Component" :key="route.fullPath" />
-              </Transition>
-            </RouterView>
-            <footer class="foot">Bonbon Admin 管理后台 · 仅用于视觉方向确认，数据均为演示内容</footer>
-          </main>
-        </div>
-      </div>
-    </n-message-provider>
-  </n-config-provider>
+  <div v-else class="shell">
+    <SideNav />
+    <div class="main">
+      <TopBar />
+      <StageAxis v-if="!isHome" />
+      <main class="content">
+        <RouterView v-slot="{ Component, route }">
+          <Transition :name="`page-${pageDir}`" mode="out-in">
+            <component :is="Component" :key="route.fullPath" />
+          </Transition>
+        </RouterView>
+        <footer class="foot">Bonbon Admin 管理后台 · 仅用于视觉方向确认，数据均为演示内容</footer>
+      </main>
+    </div>
+  </div>
+
+  <Toaster />
 </template>

@@ -2,6 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Ico from '@/components/Ico.vue'
+import { Tooltip } from '@/components/ui/tooltip'
 import { departments, isDepartmentKey } from '@/data/org'
 import type { DepartmentKey } from '@/types/domain'
 
@@ -84,12 +85,11 @@ function goDept(key: DepartmentKey): void {
 
 <template>
   <aside class="aside">
-    <n-tooltip placement="right" :delay="200">
+    <Tooltip content="Bonbon Admin · 运营中台" side="right" :delay="200">
       <template #trigger>
         <div class="brand"><div class="brand-mark">B</div></div>
       </template>
-      Bonbon Admin · 运营中台
-    </n-tooltip>
+    </Tooltip>
 
     <nav class="nav">
       <div ref="listEl" class="nav-list">
@@ -105,7 +105,7 @@ function goDept(key: DepartmentKey): void {
           <path class="nav-pill-shape" :d="pillPath" />
         </svg>
 
-        <n-tooltip placement="right" :delay="120">
+        <Tooltip content="首页" side="right" :delay="120">
           <template #trigger>
             <button
               class="nav-item"
@@ -117,10 +117,9 @@ function goDept(key: DepartmentKey): void {
               <Ico class="nav-ico" name="home" :size="23" />
             </button>
           </template>
-          首页
-        </n-tooltip>
+        </Tooltip>
 
-        <n-tooltip v-for="d in departments" :key="d.key" placement="right" :delay="120">
+        <Tooltip v-for="d in departments" :key="d.key" :content="d.name" side="right" :delay="120">
           <template #trigger>
             <button
               class="nav-item"
@@ -132,8 +131,7 @@ function goDept(key: DepartmentKey): void {
               <Ico class="nav-ico" :name="d.icon" :size="23" />
             </button>
           </template>
-          {{ d.name }}
-        </n-tooltip>
+        </Tooltip>
       </div>
     </nav>
   </aside>

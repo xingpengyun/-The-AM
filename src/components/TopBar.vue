@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { computed, h, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { DropdownOption } from 'naive-ui'
-import { useMessage } from 'naive-ui'
 import Ico from '@/components/Ico.vue'
+import { DropdownMenu, type MenuItem } from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
+import { Tooltip } from '@/components/ui/tooltip'
+import { toast } from '@/composables/useToast'
 import { departmentOfParam, stageOfParam } from '@/data/org'
 import { getSession, logout } from '@/utils/auth'
 
 const route = useRoute()
 const router = useRouter()
-const message = useMessage()
 
 /* 顶栏展示当前登录人（来自本地会话） */
 const session = getSession()
@@ -17,7 +18,7 @@ const userName = session?.displayName ?? '邢鹏昀'
 const userInitial = userName.slice(0, 1)
 const userRole = session?.role === 'admin' ? '超级管理员' : '成员'
 const topSearch = ref('')
-const searchRef = ref<{ focus?: () => void } | null>(null)
+const searchRef = ref<InstanceType<typeof Input> | null>(null)
 
 const isHome = computed(() => route.name === 'home')
 const dept = computed(() => departmentOfParam(route.params.dept))
@@ -27,42 +28,42 @@ function goHome(): void {
   if (!isHome.value) router.push('/home')
 }
 
-const noticeOptions: DropdownOption[] = [
-  { key: 'n1', label: '订单 BB202611210089 已完成支付', icon: () => h(Ico, { name: 'check', size: 15 }) },
-  { key: 'n2', label: '客户「林知远」提交了退款申请', icon: () => h(Ico, { name: 'refund', size: 15 }) },
-  { key: 'n3', label: '本周经营周报已生成', icon: () => h(Ico, { name: 'file', size: 15 }) },
-  { type: 'divider', key: 'd1' },
-  { key: 'all', label: '查看全部通知', icon: () => h(Ico, { name: 'bell', size: 15 }) }
+const noticeOptions: MenuItem[] = [
+  { key: 'n1', label: '订单 BB202611210089 已完成支付', icon: 'check' },
+  { key: 'n2', label: '客户「林知远」提交了退款申请', icon: 'refund' },
+  { key: 'n3', label: '本周经营周报已生成', icon: 'file' },
+  { key: 'd1', separator: true },
+  { key: 'all', label: '查看全部通知', icon: 'bell' }
 ]
 
-const userOptions: DropdownOption[] = [
-  { key: 'profile', label: '个人中心', icon: () => h(Ico, { name: 'user', size: 15 }) },
-  { key: 'settings', label: '账号设置', icon: () => h(Ico, { name: 'settings', size: 15 }) },
-  { type: 'divider', key: 'd2' },
-  { key: 'logout', label: '退出登录', icon: () => h(Ico, { name: 'logout', size: 15 }) }
+const userOptions: MenuItem[] = [
+  { key: 'profile', label: '个人中心', icon: 'user' },
+  { key: 'settings', label: '账号设置', icon: 'settings' },
+  { key: 'd2', separator: true },
+  { key: 'logout', label: '退出登录', icon: 'logout' }
 ]
 
 function notify(text: string): void {
-  message.info(text, { duration: 2200 })
+  toast(text)
 }
 
 function onSearch(): void {
   if (!topSearch.value.trim()) {
-    message.warning('请输入搜索关键词')
+    toast('请输入搜索关键词', 'warning')
     return
   }
   notify(`搜索「${topSearch.value.trim()}」（示例）`)
 }
 
-function onNotice(key: string | number): void {
+function onNotice(key: string): void {
   if (key === 'all') notify('通知中心为示例模块')
   else notify('通知详情为示例内容')
 }
 
-function onUser(key: string | number): void {
+function onUser(key: string): void {
   if (key === 'logout') {
     logout()
-    message.success('已退出登录')
+    toast('已退出登录', 'success')
     router.replace({ name: 'login' })
     return
   }
@@ -72,7 +73,7 @@ function onUser(key: string | number): void {
 function onKeydown(e: KeyboardEvent): void {
   if ((e.ctrlKey || e.metaKey) && String(e.key).toLowerCase() === 'k') {
     e.preventDefault()
-    if (searchRef.value && searchRef.value.focus) searchRef.value.focus()
+    searchRef.value?.focus()
   }
 }
 
@@ -83,54 +84,66 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 <template>
   <header class="topbar">
     <div class="crumb">
-      <n-breadcrumb>
-        <n-breadcrumb-item>
-          <a class="crumb-link" href="/home" @click.prevent="goHome">首页</a>
-        </n-breadcrumb-item>
-        <n-breadcrumb-item v-if="!isHome">{{ dept.name }}</n-breadcrumb-item>
-        <n-breadcrumb-item v-if="!isHome && stage">{{ stage.no }} {{ stage.name }}</n-breadcrumb-item>
-      </n-breadcrumb>
+      <nav class="flex items-center gap-1.5 text-[12px] text-muted-foreground" aria-label="面包屑">
+        <a class="crumb-link" href="/home" @click.prevent="goHome">首页</a>
+        <template v-if="!isHome">
+          <span class="opacity-60">/</span>
+          <span class="text-foreground">{{ dept.name }}</span>
+        </template>
+        <template v-if="!isHome && stage">
+          <span class="opacity-60">/</span>
+          <span class="text-foreground">{{ stage.no }} {{ stage.name }}</span>
+        </template>
+      </nav>
     </div>
 
-    <div class="topsearch">
-      <n-input
+    <div class="topsearch relative flex-1">
+      <Ico
+        name="search"
+        :size="15"
+        class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+      />
+      <Input
         ref="searchRef"
-        v-model:value="topSearch"
+        v-model="topSearch"
         placeholder="搜索订单、客户或功能…"
-        clearable
-        @keyup.enter="onSearch"
-      >
-        <template #prefix><Ico name="search" :size="15" /></template>
-        <template #suffix><span class="kbd">Ctrl K</span></template>
-      </n-input>
+        class="h-[34px] bg-muted pl-8 pr-16"
+        @enter="onSearch"
+      />
+      <span class="kbd pointer-events-none absolute right-2 top-1/2 -translate-y-1/2">Ctrl K</span>
     </div>
 
     <div class="top-actions">
-      <n-tooltip trigger="hover">
+      <Tooltip content="帮助中心">
         <template #trigger>
           <button class="icon-btn" aria-label="帮助中心" @click="notify('帮助中心为示例交互')">
             <Ico name="help" :size="17" />
           </button>
         </template>
-        帮助中心
-      </n-tooltip>
+      </Tooltip>
 
-      <n-dropdown :options="noticeOptions" trigger="click" @select="onNotice">
-        <button class="icon-btn" aria-label="通知">
-          <Ico name="bell" :size="17" />
-          <span class="dot"></span>
-        </button>
-      </n-dropdown>
+      <DropdownMenu :items="noticeOptions" @select="onNotice">
+        <template #trigger>
+          <button class="icon-btn" aria-label="通知">
+            <Ico name="bell" :size="17" />
+            <span class="dot"></span>
+          </button>
+        </template>
+      </DropdownMenu>
 
       <span class="top-divider"></span>
 
-      <n-dropdown :options="userOptions" trigger="click" @select="onUser">
-        <button class="user">
-          <n-avatar round :size="30" class="user-avatar">{{ userInitial }}</n-avatar>
-          <span class="user-meta"><b>{{ userName }}</b><i>{{ userRole }}</i></span>
-          <Ico name="chevron-down" :size="13" class="user-chev" />
-        </button>
-      </n-dropdown>
+      <DropdownMenu :items="userOptions" @select="onUser">
+        <template #trigger>
+          <button class="user">
+            <span class="grid h-[30px] w-[30px] place-items-center rounded-full bg-primary text-[12px] font-semibold text-primary-foreground">
+              {{ userInitial }}
+            </span>
+            <span class="user-meta"><b>{{ userName }}</b><i>{{ userRole }}</i></span>
+            <Ico name="chevron-down" :size="13" class="user-chev" />
+          </button>
+        </template>
+      </DropdownMenu>
     </div>
   </header>
 </template>

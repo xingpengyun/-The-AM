@@ -3,6 +3,8 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import Ico from '@/components/Ico.vue'
 import ProvinceMap from '@/components/ProvinceMap.vue'
+import { Badge } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card'
 import { departmentOfParam } from '@/data/org'
 
 const props = withDefaults(defineProps<{ global?: boolean }>(), { global: false })
@@ -31,16 +33,16 @@ const deptName = computed(() => dept.value?.name ?? '部门')
           <div class="page-kicker"><Ico name="sparkle" :size="10" /> BONBON BUSINESS · {{ deptName }}</div>
           <div class="page-title-row">
             <h1>运营概览</h1>
-            <span class="chip-soft">{{ deptName }} · 部门概览</span>
+            <Badge variant="mint">{{ deptName }} · 部门概览</Badge>
           </div>
         </div>
       </div>
 
-      <section class="panel placeholder">
+      <Card tone="mint" class="placeholder">
         <div class="ph-art"><Ico name="grid" :size="28" /></div>
         <h2>{{ deptName }} · 部门概览</h2>
         <p>该模块待业务接入</p>
-      </section>
+      </Card>
     </template>
   </div>
 </template>
