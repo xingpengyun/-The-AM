@@ -562,7 +562,8 @@ onBeforeUnmount(() => {
 .rank-foot b { color: var(--brand-deep); font-weight: 700; }
 
 .rings-card { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-around; gap: 10px; }
-.ring { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.ring { display: flex; flex-direction: column; align-items: center; gap: 6px; box-shadow: none; outline: none; }
+.ring-g, .ring-dial { outline: none; }
 .ring-g { position: relative; width: 54px; height: 54px; }
 .ring-dial {
   width: 54px; height: 54px; border-radius: 50%;
