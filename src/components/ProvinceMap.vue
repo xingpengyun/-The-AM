@@ -1,377 +1,338 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { echarts, type EChartsCoreOption } from '@/lib/echarts'
 import Ico from '@/components/Ico.vue'
 import { toast } from '@/composables/useToast'
-import geoSourceRaw from '@/data/china-geo.json'
-import {
-  fmtNum,
-  fmtMoneyShort,
-  provinceByShort,
-  provinceOrders,
-  provinceOrderTotal,
-  provinceStoreByShort,
-  provinceStoreTotal,
-  provinceStoreMax,
-  eastStoreShare,
-  topProvinces
-} from '@/data/business'
-import type {
-  GeoCollection,
-  GeoFeature,
-  LinearRing,
-  MapShape,
-  MapState,
-  MapTip,
-  ProvinceStoreInfo
-} from '@/types/domain'
+import { fmtMoneyShort, fmtNum, provinceByShort, provinceStoreByShort, storesOfProvince } from '@/data/business'
+import type { GeoCollection, MapState } from '@/types/domain'
 
-const mapPlotEl = ref<HTMLDivElement | null>(null)
+/* 城市纬度的中国地图比例，避免高纬度被纵向拉伸 */
+const CHINA_ASPECT_SCALE = Math.cos((35 * Math.PI) / 180)
+
+const mapEl = ref<HTMLDivElement | null>(null)
 const mapState = ref<MapState>('loading')
 const mapError = ref('')
-const selectedProvince = ref<ProvinceStoreInfo | null>(null)
-const mapShapes = ref<MapShape[]>([])
-const mapTip = ref<MapTip | null>(null)
-let mapGeo: GeoCollection | null = null
+let chart: ReturnType<typeof echarts.init> | null = null
+let resizeObserver: ResizeObserver | null = null
 
-const geoSource = geoSourceRaw as unknown as GeoCollection
+type MetricKey = 'stores' | 'orders' | 'amount'
 
-const MAP_VIEW_W = 840
-const MAP_VIEW_H = 600
-const MAP_PAD = 24
-/* 门店数多色分级：浅绿 → 翡翠绿，明度统一递减 */
-const MAP_STOPS = ['#EAF7F1', '#D5F0E3', '#B7E6D2', '#8FD9BE', '#5FC9A4', '#2FB98C']
-/* 东部紧凑省份的标签外移，配合引线避免数字互相叠压 */
-const MAP_LABEL_OFFSETS: Record<string, [number, number]> = {
-  北京: [-30, -22], 天津: [30, 7], 上海: [39, -5], 香港: [27, 20],
-  澳门: [-31, 27], 海南: [-13, 15], 宁夏: [0, -11], 江苏: [-15, -8],
-  浙江: [14, 14], 安徽: [-13, 5], 台湾: [13, 1], 重庆: [-9, 11],
-  河北: [8, 24]
-}
-/* 面积极小的直辖市/特别行政区：门店数用白色胶囊标签外移显示 */
-const MAP_PILLS = ['北京', '天津', '上海', '香港', '澳门']
+const METRICS: { key: MetricKey; label: string }[] = [
+  { key: 'stores', label: '门店数' },
+  { key: 'orders', label: '订单量' },
+  { key: 'amount', label: '营收' }
+]
 
-const provinceCount = provinceOrders.length
+const metric = ref<MetricKey>('stores')
 
-function shortenProvince(name: string | undefined): string {
-  return String(name || '')
-    .replace(/特别行政区$/, '')
-    .replace(/(壮族|回族|维吾尔)自治区$/, '')
-    .replace(/自治区$/, '')
-    .replace(/省$/, '')
-    .replace(/市$/, '')
+/* 门店节点：城市坐标 + 所属省份（省份与 business.ts 的省份数据一一对应） */
+interface StoreSeed {
+  city: string
+  province: string
+  store: string
+  lng: number
+  lat: number
 }
 
-function geoMaxLat(coords: unknown): number {
-  let max = -90
-  ;(function walk(node: unknown) {
-    if (!Array.isArray(node)) return
-    if (typeof node[0] === 'number' && typeof node[1] === 'number') {
-      if (node[1] > max) max = node[1]
-      return
-    }
-    for (let i = 0; i < node.length; i++) walk(node[i])
-  })(coords)
-  return max
+const STORE_SEEDS: StoreSeed[] = [
+  { city: '广州', province: '广东', store: '广州天河店', lng: 113.264, lat: 23.129 },
+  { city: '深圳', province: '广东', store: '深圳南山店', lng: 114.058, lat: 22.543 },
+  { city: '厦门', province: '福建', store: '厦门思明店', lng: 118.089, lat: 24.479 },
+  { city: '福州', province: '福建', store: '福州鼓楼店', lng: 119.296, lat: 26.074 },
+  { city: '杭州', province: '浙江', store: '杭州西湖店', lng: 120.155, lat: 30.274 },
+  { city: '宁波', province: '浙江', store: '宁波鄞州店', lng: 121.55, lat: 29.874 },
+  { city: '上海', province: '上海', store: '上海静安店', lng: 121.473, lat: 31.23 },
+  { city: '南京', province: '江苏', store: '南京鼓楼店', lng: 118.797, lat: 32.06 },
+  { city: '苏州', province: '江苏', store: '苏州园区店', lng: 120.585, lat: 31.299 },
+  { city: '合肥', province: '安徽', store: '合肥政务店', lng: 117.227, lat: 31.821 },
+  { city: '武汉', province: '湖北', store: '武汉江汉店', lng: 114.305, lat: 30.593 },
+  { city: '长沙', province: '湖南', store: '长沙岳麓店', lng: 112.939, lat: 28.228 },
+  { city: '南昌', province: '江西', store: '南昌红谷滩店', lng: 115.858, lat: 28.683 },
+  { city: '济南', province: '山东', store: '济南历下店', lng: 117.12, lat: 36.651 },
+  { city: '青岛', province: '山东', store: '青岛市南店', lng: 120.383, lat: 36.067 },
+  { city: '北京', province: '北京', store: '北京朝阳店', lng: 116.407, lat: 39.904 },
+  { city: '天津', province: '天津', store: '天津和平店', lng: 117.2, lat: 39.084 },
+  { city: '郑州', province: '河南', store: '郑州金水店', lng: 113.625, lat: 34.746 },
+  { city: '西安', province: '陕西', store: '西安雁塔店', lng: 108.939, lat: 34.341 },
+  { city: '成都', province: '四川', store: '成都锦江店', lng: 104.066, lat: 30.572 },
+  { city: '重庆', province: '重庆', store: '重庆渝中店', lng: 106.551, lat: 29.563 },
+  { city: '沈阳', province: '辽宁', store: '沈阳和平店', lng: 123.431, lat: 41.805 },
+  { city: '昆明', province: '云南', store: '昆明五华店', lng: 102.833, lat: 24.88 }
+]
+
+/* 巡店 / 供货链路：相邻城市串联，后续可换成真实线路表 */
+const ROUTE_CHAINS: string[][] = [
+  ['广州', '深圳', '厦门', '福州', '杭州', '上海'],
+  ['上海', '苏州', '南京', '合肥', '武汉'],
+  ['广州', '长沙', '武汉'],
+  ['武汉', '南昌', '杭州'],
+  ['北京', '天津', '济南', '青岛'],
+  ['北京', '郑州', '西安', '成都', '重庆'],
+  ['北京', '沈阳'],
+  ['成都', '昆明'],
+  ['重庆', '长沙']
+]
+
+interface StoreNode {
+  name: string
+  value: [number, number, number]
+  city: string
+  province: string
+  store: string
+  stores: number
+  orders: number
+  amount: number
 }
 
-function normalizeGeo(geo: GeoCollection): GeoCollection {
-  if (!geo || !geo.features || !geo.features.length) throw new Error('invalid geo')
-  const kept: GeoFeature[] = []
-  geo.features.forEach((f) => {
-    if (!f || !f.properties) return
-    if (typeof f.properties.name === 'string') {
-      f.properties.name = shortenProvince(f.properties.name)
-    }
-    /* 南海诸岛另以右下角小插图呈现，不参与主图范围计算 */
-    if (f.properties.name === '南海诸岛') return
-    const geom = f.geometry
-    if (f.properties.name === '海南' && geom) {
-      if (geom.type === 'MultiPolygon') {
-        geom.coordinates = geom.coordinates.filter((poly) => geoMaxLat(poly) >= 17)
-      } else {
-        geom.coordinates = geom.coordinates.filter((ring) => geoMaxLat(ring) >= 17)
-      }
-    }
-    kept.push(f)
+interface StoreEdge {
+  source: string
+  target: string
+}
+
+/* 按城市均分省份指标，余数落到最后一座城市，合计与 business.ts 一致 */
+function splitTotal(total: number, count: number, index: number): number {
+  const base = Math.floor(total / count)
+  return index === count - 1 ? total - base * (count - 1) : base
+}
+
+function buildNodes(): StoreNode[] {
+  const byProvince = new Map<string, StoreSeed[]>()
+  STORE_SEEDS.forEach((seed) => {
+    const list = byProvince.get(seed.province)
+    if (list) list.push(seed)
+    else byProvince.set(seed.province, [seed])
   })
-  geo.features = kept
+
+  const nodes: StoreNode[] = []
+  byProvince.forEach((seeds, province) => {
+    const order = provinceByShort[province]
+    const stores = provinceStoreByShort[province] || 0
+    const orders = order ? order.orders : 0
+    const amount = order ? order.amount : 0
+    seeds.forEach((seed, i) => {
+      const cityStores = splitTotal(stores, seeds.length, i)
+      nodes.push({
+        name: seed.city,
+        value: [seed.lng, seed.lat, cityStores],
+        city: seed.city,
+        province,
+        store: seed.store,
+        stores: cityStores,
+        orders: splitTotal(orders, seeds.length, i),
+        amount: splitTotal(amount, seeds.length, i)
+      })
+    })
+  })
+  return nodes
+}
+
+function buildEdges(): StoreEdge[] {
+  const edges: StoreEdge[] = []
+  ROUTE_CHAINS.forEach((chain) => {
+    for (let i = 1; i < chain.length; i++) edges.push({ source: chain[i - 1], target: chain[i] })
+  })
+  return edges
+}
+
+const nodes = buildNodes()
+const edges = buildEdges()
+const cityCount = nodes.length
+const routeCount = edges.length
+const provinceCount = new Set(nodes.map((n) => n.province)).size
+
+const metricTotalText = computed(() => {
+  if (metric.value === 'stores') {
+    return `${fmtNum(nodes.reduce((s, n) => s + n.stores, 0))} 家`
+  }
+  if (metric.value === 'orders') {
+    return `${fmtNum(nodes.reduce((s, n) => s + n.orders, 0))} 单`
+  }
+  return `¥${fmtNum(Math.round(nodes.reduce((s, n) => s + n.amount, 0) / 10000))} 万`
+})
+
+function metricRow(label: string, value: string, active: boolean): string {
+  return (
+    `<div style="display:flex;justify-content:space-between;gap:16px;margin-top:3px;font-size:10.5px;color:#7A8C95;">` +
+    `<span>${label}</span>` +
+    `<b style="color:${active ? '#0E7B68' : '#25334A'};font-variant-numeric:tabular-nums;">${value}</b></div>`
+  )
+}
+
+function tooltipHtml(params: { dataType?: string; data?: unknown }): string {
+  if (params.dataType === 'edge') {
+    const edge = params.data as StoreEdge
+    return (
+      `<div style="font-size:11.5px;font-weight:700;">${edge.source} → ${edge.target}</div>` +
+      `<div style="margin-top:4px;font-size:10.5px;color:#7A8C95;">巡店 / 供货链路</div>`
+    )
+  }
+  const node = params.data as StoreNode
+  return (
+    `<div style="display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;">` +
+    `<i style="width:5px;height:5px;border-radius:99px;background:#0E7B68;"></i>${node.store}</div>` +
+    `<div style="display:flex;justify-content:space-between;gap:16px;margin-top:5px;font-size:10.5px;color:#7A8C95;">` +
+    `<span>城市</span><b style="color:#25334A;">${node.province} · ${node.city}</b></div>` +
+    metricRow('门店数', `${fmtNum(node.stores)} 家`, metric.value === 'stores') +
+    metricRow('订单量', `${fmtNum(node.orders)} 单`, metric.value === 'orders') +
+    metricRow('营收', fmtMoneyShort(node.amount), metric.value === 'amount')
+  )
+}
+
+function buildOption(): EChartsCoreOption {
+  return {
+    backgroundColor: 'transparent',
+    animationDuration: 600,
+    textStyle: { fontFamily: 'inherit' },
+    tooltip: {
+      trigger: 'item',
+      confine: true,
+      padding: [9, 11],
+      backgroundColor: 'rgba(255,255,255,.98)',
+      borderColor: 'rgba(35,38,59,.10)',
+      borderWidth: 1,
+      extraCssText: 'border-radius:9px;box-shadow:0 16px 32px -24px rgba(35,38,59,.45);',
+      formatter: tooltipHtml
+    },
+    geo: {
+      map: 'china',
+      roam: true,
+      scaleLimit: { min: 0.8, max: 6 },
+      aspectScale: CHINA_ASPECT_SCALE,
+      layoutCenter: ['50%', '50%'],
+      layoutSize: '100%',
+      itemStyle: {
+        areaColor: '#F3F9F5',
+        borderColor: '#DCE9E1',
+        borderWidth: 0.8,
+        shadowColor: 'rgba(14,123,104,.10)',
+        shadowBlur: 12
+      },
+      emphasis: {
+        itemStyle: { areaColor: '#E7F4EC', borderColor: '#B9DCCB' },
+        label: { color: '#0E7B68' }
+      },
+      select: { disabled: true },
+      label: { show: true, color: '#7A8C83', fontSize: 9.5 }
+    },
+    series: [
+      {
+        type: 'graph',
+        coordinateSystem: 'geo',
+        geoIndex: 0,
+        symbol: 'circle',
+        symbolSize: 7,
+        itemStyle: {
+          color: '#0E7B68',
+          borderColor: '#FFFFFF',
+          borderWidth: 1.4,
+          shadowColor: 'rgba(14,123,104,.35)',
+          shadowBlur: 6
+        },
+        label: { show: false },
+        emphasis: {
+          scale: 1.4,
+          itemStyle: { color: '#10B981', borderColor: '#FFFFFF' },
+          label: { show: true, color: '#0E7B68', fontSize: 10, fontWeight: 600 }
+        },
+        edgeSymbol: ['none', 'arrow'],
+        edgeSymbolSize: 5,
+        lineStyle: { color: 'rgba(47,185,140,.55)', width: 1, opacity: 0.8, curveness: 0.12 },
+        data: nodes,
+        edges
+      }
+    ]
+  }
+}
+
+function onChartClick(params: { dataType?: string; componentType?: string; name?: string; data?: unknown }): void {
+  if (params.dataType === 'node') {
+    const node = params.data as StoreNode
+    toast(`${node.store} · ${fmtNum(node.stores)} 家门店`, 'info', 1800)
+    return
+  }
+  if (params.componentType === 'geo' && params.name) {
+    const info = provinceByShort[params.name]
+    toast(`${params.name} · ${fmtNum(storesOfProvince(info))} 家门店`, 'info', 1800)
+  }
+}
+
+async function loadGeo(): Promise<GeoCollection> {
+  const res = await fetch(`${import.meta.env.BASE_URL}map/china.json`)
+  if (!res.ok) throw new Error(`geo http ${res.status}`)
+  const geo = (await res.json()) as GeoCollection
+  if (!geo.features || !geo.features.length) throw new Error('geo empty')
+  /* 南海诸岛会拉低整体纬度跨度，主图不画，避免大陆被压扁 */
+  geo.features = geo.features.filter((f) => f.properties?.name !== '南海诸岛')
   return geo
 }
 
-function polygonsOf(feature: GeoFeature): LinearRing[][] {
-  const g = feature.geometry
-  if (!g || !g.coordinates) return []
-  if (g.type === 'Polygon') return [g.coordinates]
-  if (g.type === 'MultiPolygon') return g.coordinates
-  return []
-}
-
-/* 墨卡托投影：经度取 x，纬度经投影后取 -y，避免高纬度地区被拉伸 */
-function projectPoint(lng: number, lat: number): [number, number] {
-  const y = Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360))
-  return [lng, -(y * 180) / Math.PI]
-}
-
-function mapFillOf(stores: number): string {
-  if (!stores) return '#F1F8F4'
-  const t = Math.pow(Math.max(0, Math.min(1, stores / provinceStoreMax)), 0.55)
-  const pos = t * (MAP_STOPS.length - 1)
-  const i = Math.min(MAP_STOPS.length - 2, Math.floor(pos))
-  const f = pos - i
-  const rgb = (hex: string): number[] => [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)]
-  const a = rgb(MAP_STOPS[i])
-  const b = rgb(MAP_STOPS[i + 1])
-  return 'rgb(' + [
-    Math.round(a[0] + (b[0] - a[0]) * f),
-    Math.round(a[1] + (b[1] - a[1]) * f),
-    Math.round(a[2] + (b[2] - a[2]) * f)
-  ].join(',') + ')'
-}
-
-function buildMapShapes(geo: GeoCollection): MapShape[] {
-  const feats = geo.features || []
-  let minX = Infinity
-  let minY = Infinity
-  let maxX = -Infinity
-  let maxY = -Infinity
-
-  feats.forEach((f) => {
-    polygonsOf(f).forEach((poly) => {
-      poly.forEach((ring) => {
-        ring.forEach((pt) => {
-          const p = projectPoint(pt[0], pt[1])
-          if (p[0] < minX) minX = p[0]
-          if (p[0] > maxX) maxX = p[0]
-          if (p[1] < minY) minY = p[1]
-          if (p[1] > maxY) maxY = p[1]
-        })
-      })
-    })
-  })
-  if (!isFinite(minX) || !isFinite(maxY)) throw new Error('geo bounds invalid')
-
-  const scale = Math.min(
-    (MAP_VIEW_W - MAP_PAD * 2) / (maxX - minX),
-    (MAP_VIEW_H - MAP_PAD * 2) / (maxY - minY)
-  )
-  const offX = (MAP_VIEW_W - (maxX - minX) * scale) / 2 - minX * scale
-  const offY = (MAP_VIEW_H - (maxY - minY) * scale) / 2 - minY * scale
-
-  const sx = (p: number[]): number => +(p[0] * scale + offX).toFixed(1)
-  const sy = (p: number[]): number => +(p[1] * scale + offY).toFixed(1)
-
-  const shapes: MapShape[] = []
-  feats.forEach((f) => {
-    const props = f.properties
-    const name = props && props.name
-    if (!name) return
-    const polys = polygonsOf(f)
-    if (!polys.length) return
-
-    let d = ''
-    let anchor: [number, number] | null = null
-    let anchorArea = -1
-    polys.forEach((poly) => {
-      poly.forEach((ring) => {
-        let seg = ''
-        let rMinX = Infinity
-        let rMinY = Infinity
-        let rMaxX = -Infinity
-        let rMaxY = -Infinity
-        for (let i = 0; i < ring.length; i++) {
-          const p = projectPoint(ring[i][0], ring[i][1])
-          const x = sx(p)
-          const y = sy(p)
-          seg += `${i ? 'L' : 'M'}${x} ${y}`
-          if (x < rMinX) rMinX = x
-          if (x > rMaxX) rMaxX = x
-          if (y < rMinY) rMinY = y
-          if (y > rMaxY) rMaxY = y
-        }
-        d += seg + 'Z'
-        const area = (rMaxX - rMinX) * (rMaxY - rMinY)
-        if (area > anchorArea) {
-          anchorArea = area
-          anchor = [(rMinX + rMaxX) / 2, (rMinY + rMaxY) / 2]
-        }
-      })
-    })
-    if (!d) return
-
-    const cp = props && props.cp
-    if (cp && cp.length === 2) {
-      const point = projectPoint(cp[0], cp[1])
-      anchor = [sx(point), sy(point)]
-    }
-    if (!anchor) return
-
-    const stores = provinceStoreByShort[name] || 0
-    const off = MAP_LABEL_OFFSETS[name] || [0, 0]
-    const pill = MAP_PILLS.indexOf(name) > -1
-    shapes.push({
-      name,
-      d,
-      stores,
-      hasData: stores > 0,
-      fill: mapFillOf(stores),
-      onDark: stores >= provinceStoreMax * 0.62,
-      ax: +anchor[0].toFixed(1),
-      ay: +anchor[1].toFixed(1),
-      lx: +(anchor[0] + off[0]).toFixed(1),
-      ly: +(anchor[1] + off[1]).toFixed(1),
-      pill,
-      pw: 18 + String(stores).length * 7,
-      leader: pill
-    })
-  })
-  if (!shapes.length) throw new Error('geo shapes empty')
-  return shapes
-}
-
-function provinceStoreInfo(name: string): ProvinceStoreInfo {
-  const p = provinceByShort[name]
-  const stores = provinceStoreByShort[name] || 0
-  return {
-    name,
-    stores,
-    orders: p ? p.orders : 0,
-    amount: p ? p.amount : 0,
-    hasData: !!p,
-    share: provinceStoreTotal ? +((stores / provinceStoreTotal) * 100).toFixed(1) : 0,
-    pct: provinceStoreMax ? Math.round((stores / provinceStoreMax) * 100) : 0
-  }
-}
-
-function selectProvinceByName(name: string): void {
-  if (!name) return
-  if (selectedProvince.value && selectedProvince.value.name === name) {
-    clearProvinceSelection()
-    return
-  }
-  const info = provinceStoreInfo(name)
-  selectedProvince.value = info
-  mapTip.value = null
-  toast(`${name} · ${fmtNum(info.stores)} 家门店`, 'info', 1800)
-}
-
-function clearProvinceSelection(): void {
-  selectedProvince.value = null
-}
-
-function onProvinceMove(shape: MapShape, e: MouseEvent): void {
-  const host = mapPlotEl.value
-  if (!host) return
-  const rect = host.getBoundingClientRect()
-  const x = Math.min(rect.width - 76, Math.max(76, e.clientX - rect.left))
-  const y = Math.max(72, e.clientY - rect.top)
-  const info = provinceStoreInfo(shape.name)
-  mapTip.value = {
-    name: shape.name,
-    x: Math.round(x),
-    y: Math.round(y),
-    stores: info.stores,
-    orders: info.orders,
-    hasData: info.hasData
-  }
-}
-
-function onProvinceLeave(): void {
-  mapTip.value = null
-}
-
-function initMap(): void {
+async function initMap(): Promise<void> {
   mapState.value = 'loading'
   try {
-    if (!mapGeo) mapGeo = normalizeGeo(geoSource)
-    mapShapes.value = buildMapShapes(mapGeo)
+    const geo = await loadGeo()
+    echarts.registerMap('china', geo as unknown as Parameters<typeof echarts.registerMap>[1])
+    if (!mapEl.value) return
+    chart = echarts.init(mapEl.value)
+    chart.setOption(buildOption())
+    chart.on('click', onChartClick)
+    resizeObserver = new ResizeObserver(() => chart?.resize())
+    resizeObserver.observe(mapEl.value)
     mapState.value = 'ready'
   } catch (err) {
     mapState.value = 'error'
-    mapError.value = '内联地图数据解析失败，请刷新页面重试'
+    mapError.value = '地图数据加载失败，请刷新页面重试'
     console.error(err)
   }
 }
 
 onMounted(initMap)
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect()
+  resizeObserver = null
+  chart?.dispose()
+  chart = null
+})
 </script>
 
 <template>
   <section class="panel map-card">
-    <div class="card-head">
+    <div class="card-head map-head">
       <div class="title-row">
         <span class="card-ico"><Ico name="map" :size="16" /></span>
         <div>
           <div class="card-title-line">
-            <span class="card-title">各地区门店分布</span>
-            <span class="count-pill">{{ fmtNum(provinceStoreTotal) }} 家</span>
+            <span class="card-title">门店地理分布</span>
+            <span class="count-pill">覆盖 {{ metricTotalText }}</span>
           </div>
-          <div class="card-sub">省级门店分布 · 点击省份查看门店数明细</div>
+          <div class="card-sub">覆盖 {{ provinceCount }} 省 {{ cityCount }} 城 · 可缩放漫游 · 悬停查看门店与链路</div>
         </div>
       </div>
-      <span class="map-badge"><i></i>覆盖 {{ provinceCount }} 个地区</span>
+      <div class="map-tabs" role="tablist" aria-label="地图指标">
+        <button
+          v-for="m in METRICS"
+          :key="m.key"
+          type="button"
+          role="tab"
+          :aria-selected="metric === m.key"
+          :class="{ on: metric === m.key }"
+          @click="metric = m.key"
+        >{{ m.label }}</button>
+      </div>
     </div>
 
     <div class="map-body">
-      <div ref="mapPlotEl" class="map-plot">
-        <svg viewBox="0 0 840 600" preserveAspectRatio="xMidYMid meet" role="img" aria-label="中国省级门店分布地图">
-          <g class="map-land">
-            <path
-              v-for="p in mapShapes"
-              :key="p.name"
-              class="province"
-              :class="{ selected: selectedProvince && selectedProvince.name === p.name }"
-              :d="p.d"
-              :data-name="p.name"
-              :fill="selectedProvince && selectedProvince.name === p.name ? '#0E7B68' : p.fill"
-              @click="selectProvinceByName(p.name)"
-              @mousemove="onProvinceMove(p, $event)"
-              @mouseleave="onProvinceLeave"
-            ></path>
-          </g>
-          <g>
-            <template v-for="p in mapShapes" :key="'l-' + p.name">
-              <g v-if="p.pill" class="label-pill">
-                <line :x1="p.ax" :y1="p.ay" :x2="p.lx" :y2="p.ly" class="label-leader"></line>
-                <rect :x="p.lx - p.pw / 2" :y="p.ly - 8" :width="p.pw" height="16" rx="8"></rect>
-                <text :x="p.lx" :y="p.ly + 0.5" text-anchor="middle" dominant-baseline="middle">{{ p.stores }}</text>
-              </g>
-              <text
-                v-else
-                class="province-label"
-                :class="{
-                  'on-dark': selectedProvince && selectedProvince.name === p.name ? true : p.onDark,
-                  'on-light': !(selectedProvince && selectedProvince.name === p.name) && !p.onDark,
-                  selected: selectedProvince && selectedProvince.name === p.name
-                }"
-                :x="p.lx"
-                :y="p.ly"
-                text-anchor="middle"
-                dominant-baseline="middle"
-              >{{ p.stores }}</text>
-            </template>
-          </g>
-        </svg>
+      <div class="map-plot">
+        <div ref="mapEl" class="map-canvas" role="img" aria-label="中国城市门店分布与巡店链路地图"></div>
+
+        <div class="map-stats">
+          <div><span>覆盖省份</span><b>{{ provinceCount }}</b></div>
+          <div><span>覆盖城市</span><b>{{ cityCount }}</b></div>
+          <div><span>联动链路</span><b>{{ routeCount }}</b></div>
+        </div>
 
         <div class="map-legend">
-          <span>门店数</span>
-          <span class="map-legend-bar"></span>
-          <span class="map-legend-scale">少 → 多</span>
-        </div>
-
-        <div class="map-inset" aria-hidden="true">
-          <svg viewBox="0 0 74 26">
-            <path d="M17 12l7-4 9 2 5 6-3 7-9 1-7-6z" fill="#CADAD0" stroke="#FFFFFF" stroke-width="1" />
-            <circle cx="48" cy="9" r="1.5" fill="#A9C4B1" />
-            <circle cx="56" cy="17" r="1.1" fill="#A9C4B1" />
-          </svg>
-          南海诸岛
-        </div>
-
-        <div v-if="mapTip" class="map-tip" :style="{ left: mapTip.x + 'px', top: mapTip.y + 'px' }">
-          <div class="map-tip-name"><i></i>{{ mapTip.name }}</div>
-          <div v-if="mapTip.hasData" class="map-tip-row"><span>门店数</span><b>{{ fmtNum(mapTip.stores) }} 家</b></div>
-          <div v-if="mapTip.hasData" class="map-tip-row"><span>订单量</span><b>{{ fmtNum(mapTip.orders) }} 单</b></div>
-          <div v-if="!mapTip.hasData" class="map-tip-empty">暂无门店数据（按 0 计）</div>
+          <span class="map-legend-dot"></span><span>门店节点</span>
+          <span class="map-legend-arrow">→</span><span>巡店 / 供货链路</span>
         </div>
 
         <div v-if="mapState !== 'ready'" class="map-overlay">
@@ -386,55 +347,6 @@ onMounted(initMap)
           </template>
         </div>
       </div>
-
-      <aside class="map-rail">
-        <div class="rail-total">
-          <div class="rail-total-label">全国门店总数</div>
-          <div class="rail-total-num"><b>{{ fmtNum(provinceStoreTotal) }}</b><span>家</span></div>
-          <div class="rail-total-sub">
-            <span>覆盖 {{ provinceCount }} 个地区</span>
-            <b>{{ fmtNum(provinceOrderTotal) }} 单</b>
-          </div>
-        </div>
-
-        <div v-if="selectedProvince" class="rail-detail">
-          <button class="rail-detail-close" type="button" aria-label="关闭省份明细" @click="clearProvinceSelection">×</button>
-          <div class="rail-detail-head">
-            <span class="rail-detail-name">{{ selectedProvince.name }}</span>
-            <span class="rail-detail-chip" :class="{ empty: !selectedProvince.hasData }">{{ selectedProvince.hasData ? '已选中' : '暂无数据' }}</span>
-          </div>
-          <div class="rail-detail-num"><b>{{ fmtNum(selectedProvince.stores) }}</b><span>家门店</span></div>
-          <div class="rail-detail-rows">
-            <div><span>订单量</span><b>{{ fmtNum(selectedProvince.orders) }} 单</b></div>
-            <div><span>订单金额</span><b>{{ fmtMoneyShort(selectedProvince.amount) }}</b></div>
-            <div><span>全国门店占比</span><b>{{ selectedProvince.share }}%</b></div>
-          </div>
-          <div class="rail-detail-bar"><span :style="{ width: selectedProvince.pct + '%' }"></span></div>
-        </div>
-
-        <div v-else class="rail-insight">
-          <div class="rail-insight-top"><span>华东门店占比</span><b>{{ eastStoreShare }}%</b></div>
-          <div class="rail-insight-bar"><span :style="{ width: eastStoreShare + '%' }"></span></div>
-          <div class="rail-insight-hint"><i></i>点击地图省份查看门店数</div>
-        </div>
-
-        <div class="rail-rank">
-          <div class="rail-rank-title">
-            <span>省份订单 TOP 5</span>
-            <span>订单量</span>
-          </div>
-          <ul class="rail-rank-list">
-            <li v-for="(p, i) in topProvinces" :key="p.name" class="rail-rank-item">
-              <span class="rail-rank-idx">{{ i + 1 }}</span>
-              <div class="rail-rank-main">
-                <div class="rail-rank-line"><b>{{ p.name }}</b><span>{{ fmtNum(p.orders) }} 单</span></div>
-                <div class="rail-rank-bar"><span :style="{ width: p.pct + '%' }"></span></div>
-              </div>
-              <span class="rail-rank-amount">{{ fmtMoneyShort(p.amount) }}</span>
-            </li>
-          </ul>
-        </div>
-      </aside>
     </div>
   </section>
 </template>

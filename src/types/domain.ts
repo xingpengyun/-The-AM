@@ -98,33 +98,6 @@ export interface TopProvince {
   pct: number
 }
 
-export interface MapShape {
-  name: string
-  d: string
-  stores: number
-  hasData: boolean
-  fill: string
-  onDark: boolean
-  /* 锚点与标签坐标 */
-  ax: number
-  ay: number
-  lx: number
-  ly: number
-  /* 面积极小的直辖市 / 特别行政区使用胶囊标签 + 引线 */
-  pill: boolean
-  pw: number
-  leader: boolean
-}
-
-export interface MapTip {
-  name: string
-  x: number
-  y: number
-  stores: number
-  orders: number
-  hasData: boolean
-}
-
 export type MapState = 'loading' | 'ready' | 'error'
 
 /* ---------------- GeoJSON（最小声明，避免引入额外依赖） ---------------- */
