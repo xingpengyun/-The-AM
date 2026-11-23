@@ -78,7 +78,7 @@ function forgot(): void {
         <HoloMosaic
           v-if="holoReady"
           color="#000000"
-          metal-color="#10B981"
+          metal-color="#C7CBD3"
           spectrum="full"
           :tile-size="1.5"
           :gap="0.08"

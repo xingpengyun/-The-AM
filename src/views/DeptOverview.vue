@@ -6,6 +6,7 @@ import ProvinceMap from '@/components/ProvinceMap.vue'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { echarts, type EChartsCoreOption } from '@/lib/echarts'
+import { CHART_COLORS } from '@/lib/palette'
 import { departmentOfParam } from '@/data/org'
 import {
   fmtNum,
@@ -83,7 +84,7 @@ const trendEl = ref<HTMLDivElement | null>(null)
 const charts: ReturnType<typeof echarts.init>[] = []
 let chartResizer: ResizeObserver | null = null
 
-const axisPointerLabel = { backgroundColor: '#0E7B68', borderRadius: 4, fontSize: 10 }
+const axisPointerLabel = { backgroundColor: CHART_COLORS[0], borderRadius: 4, fontSize: 10 }
 
 function salesOption(): EChartsCoreOption {
   const max = Math.max(...monthlySales) * 1.12
@@ -93,7 +94,7 @@ function salesOption(): EChartsCoreOption {
     grid: { left: 2, right: 2, top: 8, bottom: 2 },
     tooltip: {
       trigger: 'axis',
-      axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(14,123,104,.06)' } },
+      axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(84,112,198,.06)' } },
       backgroundColor: 'rgba(255,255,255,.98)',
       borderColor: 'rgba(35,38,59,.10)',
       borderWidth: 1,
@@ -114,7 +115,7 @@ function salesOption(): EChartsCoreOption {
         data: monthlySales.map((v, i) => ({
           value: v,
           itemStyle: {
-            color: i === monthlySales.length - 1 ? '#0E7B68' : '#CDEDE1',
+            color: i === monthlySales.length - 1 ? CHART_COLORS[0] : '#E4E4E7',
             borderRadius: [3, 3, 0, 0]
           }
         }))
@@ -136,11 +137,11 @@ function memberOption(): EChartsCoreOption {
         smooth: true,
         symbol: 'none',
         data: memberSpark,
-        lineStyle: { width: 2, color: '#0E9E77' },
+        lineStyle: { width: 2, color: CHART_COLORS[1] },
         areaStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: 'rgba(14,158,119,.22)' },
-            { offset: 1, color: 'rgba(14,158,119,0)' }
+            { offset: 0, color: 'rgba(115,192,222,.22)' },
+            { offset: 1, color: 'rgba(115,192,222,0)' }
           ])
         }
       }
@@ -155,7 +156,7 @@ function trendOption(): EChartsCoreOption {
     grid: { left: 2, right: 2, top: 6, bottom: 4 },
     tooltip: {
       trigger: 'axis',
-      axisPointer: { type: 'line', lineStyle: { color: 'rgba(14,123,104,.25)' }, label: axisPointerLabel },
+      axisPointer: { type: 'line', lineStyle: { color: 'rgba(84,112,198,.25)' }, label: axisPointerLabel },
       backgroundColor: 'rgba(255,255,255,.98)',
       borderColor: 'rgba(35,38,59,.10)',
       borderWidth: 1,
@@ -186,11 +187,11 @@ function trendOption(): EChartsCoreOption {
         smooth: true,
         symbol: 'none',
         data: openedSeries,
-        lineStyle: { width: 2, color: '#0E7B68' },
+        lineStyle: { width: 2, color: CHART_COLORS[0] },
         areaStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: 'rgba(14,123,104,.2)' },
-            { offset: 1, color: 'rgba(14,123,104,0)' }
+            { offset: 0, color: 'rgba(84,112,198,.2)' },
+            { offset: 1, color: 'rgba(84,112,198,0)' }
           ])
         }
       },
@@ -200,7 +201,7 @@ function trendOption(): EChartsCoreOption {
         smooth: true,
         symbol: 'none',
         data: closedSeries,
-        lineStyle: { width: 1.6, color: '#D93B79' }
+        lineStyle: { width: 1.6, color: CHART_COLORS[5] }
       }
     ]
   }
@@ -359,14 +360,14 @@ onBeforeUnmount(() => {
           <Card class="dash-card rings-card">
             <div class="ring">
               <div class="ring-g">
-                <div class="ring-dial" :style="{ '--pct': directShare + '%', '--ring-color': '#0E7B68' }"></div>
+                <div class="ring-dial" :style="{ '--pct': directShare + '%', '--ring-color': CHART_COLORS[0] }"></div>
                 <b>{{ directShare }}%</b>
               </div>
               <span>直营占比</span>
             </div>
             <div class="ring">
               <div class="ring-g">
-                <div class="ring-dial" :style="{ '--pct': franchiseShare + '%', '--ring-color': '#10B981' }"></div>
+                <div class="ring-dial" :style="{ '--pct': franchiseShare + '%', '--ring-color': CHART_COLORS[1] }"></div>
                 <b>{{ franchiseShare }}%</b>
               </div>
               <span>加盟占比</span>
@@ -418,7 +419,7 @@ onBeforeUnmount(() => {
 }
 .live-dot {
   width: 6px; height: 6px; border-radius: 99px; background: var(--brand);
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, .15);
+  box-shadow: 0 0 0 3px rgba(24, 24, 27, .12);
   animation: livePulse 2.4s infinite ease-in-out;
 }
 @keyframes livePulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
@@ -443,7 +444,7 @@ onBeforeUnmount(() => {
 }
 .eyebrow {
   font-size: 8.5px; font-weight: 750; letter-spacing: .18em;
-  text-transform: uppercase; color: var(--mint);
+  text-transform: uppercase; color: var(--brand);
 }
 .kpi-title { margin-top: 6px; font-size: 11.5px; font-weight: 600; color: var(--ink-2); }
 .kpi-num {
@@ -459,7 +460,7 @@ onBeforeUnmount(() => {
 .delta {
   display: inline-flex; align-items: center; gap: 3px; flex: 0 0 auto;
   padding: 2px 6px; border-radius: 99px;
-  background: rgba(14, 123, 104, .1); color: var(--brand-deep);
+  background: rgba(24, 24, 27, .06); color: var(--ink-2);
   font-size: 10px; font-weight: 700; font-variant-numeric: tabular-nums;
 }
 
@@ -480,8 +481,8 @@ onBeforeUnmount(() => {
   margin-left: 5px; font-style: normal; font-size: 9.5px;
   font-weight: 600; color: var(--ink-3);
 }
-.split-bar { height: 4px; margin: 5px 0 8px; border-radius: 99px; background: #EDF5F1; overflow: hidden; }
-.split-bar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #34D399, #0E7B68); }
+.split-bar { height: 4px; margin: 5px 0 8px; border-radius: 99px; background: #F0F0F2; overflow: hidden; }
+.split-bar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #93C5FD, #5470C6); }
 .split-bar i.sky { background: linear-gradient(90deg, #7DD3FC, #38BDF8); }
 
 .sales-card, .member-card { flex: 1; display: flex; flex-direction: column; }
@@ -527,8 +528,8 @@ onBeforeUnmount(() => {
 .chart-legend { display: flex; gap: 12px; margin-top: 3px; font-size: 9.5px; color: var(--ink-3); }
 .chart-legend span { display: inline-flex; align-items: center; gap: 4px; }
 .chart-legend i { width: 7px; height: 7px; border-radius: 99px; }
-.chart-legend i.open { background: #0E7B68; }
-.chart-legend i.close { background: #D93B79; }
+.chart-legend i.open { background: #5470C6; }
+.chart-legend i.close { background: #EE6666; }
 .stats3 {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;
   margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line-soft);
@@ -551,8 +552,8 @@ onBeforeUnmount(() => {
 .rank-line { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
 .rank-line b { font-size: 11.5px; font-weight: 650; }
 .rank-line span { font-size: 9.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
-.rank-bar { height: 3px; margin-top: 4px; border-radius: 99px; background: #EAF3EE; overflow: hidden; }
-.rank-bar span { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #34D399, #0E7B68); }
+.rank-bar { height: 3px; margin-top: 4px; border-radius: 99px; background: #F0F0F2; overflow: hidden; }
+.rank-bar span { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #93C5FD, #5470C6); }
 .rank-foot {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
   margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line-soft);
@@ -565,7 +566,7 @@ onBeforeUnmount(() => {
 .ring-g { position: relative; width: 54px; height: 54px; }
 .ring-dial {
   width: 54px; height: 54px; border-radius: 50%;
-  background: conic-gradient(var(--ring-color, #0E7B68) var(--pct), #E8F2ED 0);
+  background: conic-gradient(var(--ring-color, #5470C6) var(--pct), #E4E4E7 0);
   -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 7px), #000 calc(100% - 6px));
   mask: radial-gradient(farthest-side, transparent calc(100% - 7px), #000 calc(100% - 6px));
 }

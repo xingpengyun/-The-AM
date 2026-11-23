@@ -137,9 +137,9 @@
   font-variant-numeric: tabular-nums;
 }
 .stage-chip:hover {
-  background: #F2FAF6;
-  border-color: rgba(16, 185, 129, 0.3);
-  color: var(--brand-deep);
+  background: #F4F4F5;
+  border-color: rgba(24, 24, 27, 0.18);
+  color: var(--ink);
 }
 .stage-chip.dim {
   opacity: 0.45;
@@ -148,7 +148,7 @@
   background: var(--brand);
   border-color: var(--brand);
   color: #FFFFFF;
-  box-shadow: 0 8px 18px -12px rgba(14, 123, 104, 0.85);
+  box-shadow: 0 8px 18px -12px rgba(24, 24, 27, 0.35);
 }
 .stage-chip.on b {
   color: rgba(255, 255, 255, 0.72);
@@ -220,10 +220,10 @@
   z-index: 1;
   pointer-events: none;
   background:
-    radial-gradient(58% 34% at 28% 52%, rgba(2, 7, 5, 0.82) 0%, rgba(2, 7, 5, 0.62) 52%, rgba(2, 7, 5, 0.16) 84%, rgba(2, 7, 5, 0) 100%),
-    radial-gradient(34% 22% at 12% 7%, rgba(2, 7, 5, 0.66) 0%, rgba(2, 7, 5, 0.34) 55%, rgba(2, 7, 5, 0) 78%),
-    radial-gradient(32% 14% at 13% 96%, rgba(2, 7, 5, 0.75) 0%, rgba(2, 7, 5, 0.45) 58%, rgba(2, 7, 5, 0) 82%),
-    linear-gradient(rgba(255, 190, 130, 0.04), rgba(255, 190, 130, 0.04));
+    radial-gradient(58% 34% at 28% 52%, rgba(9, 9, 11, 0.82) 0%, rgba(9, 9, 11, 0.62) 52%, rgba(9, 9, 11, 0.16) 84%, rgba(9, 9, 11, 0) 100%),
+    radial-gradient(34% 22% at 12% 7%, rgba(9, 9, 11, 0.66) 0%, rgba(9, 9, 11, 0.34) 55%, rgba(9, 9, 11, 0) 78%),
+    radial-gradient(32% 14% at 13% 96%, rgba(9, 9, 11, 0.75) 0%, rgba(9, 9, 11, 0.45) 58%, rgba(9, 9, 11, 0) 82%),
+    linear-gradient(rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03));
 }
 
 /* 品牌文案覆盖层：限制在左栏安全区 */
@@ -335,7 +335,7 @@
   color: rgba(255, 255, 255, 0.5);
 }
 
-/* 右栏：纯白背景，左缘一条极淡的绿色过渡，与马赛克交界不生硬 */
+/* 右栏：纯白背景，左缘一条极淡的中性过渡，与马赛克交界不生硬 */
 .auth-panel {
   position: absolute;
   left: var(--auth-split);
@@ -347,10 +347,10 @@
   overflow-y: auto;
   padding: 40px 24px 96px;
   background:
-    linear-gradient(90deg, rgba(9, 61, 46, 0.05) 0px, rgba(255, 255, 255, 0) 130px),
+    linear-gradient(90deg, rgba(24, 24, 27, 0.04) 0px, rgba(255, 255, 255, 0) 130px),
     #FFFFFF;
-  border-left: 1px solid rgba(6, 60, 44, 0.08);
-  box-shadow: -22px 0 46px -34px rgba(3, 40, 28, 0.5);
+  border-left: 1px solid rgba(24, 24, 27, 0.08);
+  box-shadow: -22px 0 46px -34px rgba(24, 24, 27, 0.3);
 }
 .auth-card {
   position: relative;
@@ -360,17 +360,17 @@
   /* 四个方向 auto：在右栏内水平、垂直居中；过矮时自动让位给滚动 */
   margin: auto;
   padding: 40px 38px 30px;
-  /* 浅色磨砂玻璃：半透白 + 极淡薄荷绿，白底可透出，靠边缘高光立住 */
+  /* 浅色磨砂玻璃：半透白 + 中性灰，白底可透出，靠边缘高光立住 */
   background:
-    radial-gradient(120% 90% at 12% 0%, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 62%),
-    linear-gradient(152deg, rgba(255, 255, 255, 0.66) 0%, rgba(226, 244, 236, 0.58) 52%, rgba(211, 237, 226, 0.52) 100%);
-  backdrop-filter: blur(22px) saturate(1.18);
-  -webkit-backdrop-filter: blur(22px) saturate(1.18);
-  border: 1px solid rgba(6, 78, 56, 0.16);
+    radial-gradient(120% 90% at 12% 0%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 62%),
+    linear-gradient(152deg, rgba(255, 255, 255, 0.7) 0%, rgba(244, 244, 245, 0.62) 52%, rgba(228, 228, 231, 0.55) 100%);
+  backdrop-filter: blur(22px) saturate(1.1);
+  -webkit-backdrop-filter: blur(22px) saturate(1.1);
+  border: 1px solid rgba(24, 24, 27, 0.14);
   border-radius: calc(var(--radius) + 2px);
   box-shadow:
-    0 20px 46px -28px rgba(6, 50, 37, 0.42),
-    0 2px 8px rgba(6, 50, 37, 0.05),
+    0 20px 46px -28px rgba(24, 24, 27, 0.3),
+    0 2px 8px rgba(24, 24, 27, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.95),
     inset 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
@@ -487,10 +487,10 @@
     animation: none;
   }
 }
-/* 不支持 backdrop-filter：退化为浅薄荷实底，深色文字仍清晰 */
+/* 不支持 backdrop-filter：退化为浅灰实底，深色文字仍清晰 */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .auth-card {
-    background: #EDF7F2;
+    background: #F4F4F5;
   }
 }
 /* 登录输入框改由 shadcn Input + 令牌控制 */
@@ -500,12 +500,12 @@
   font-size: 28px;
   font-weight: 800;
   letter-spacing: -0.035em;
-  color: #0A2A20;
+  color: var(--login-ink);
 }
 .auth-card-head p {
   margin: 7px 0 0;
   font-size: 12px;
-  color: rgba(10, 42, 32, 0.7);
+  color: rgba(24, 24, 27, 0.65);
 }
 /* 登录表单间距由组件类控制 */
 .auth-row {
@@ -519,14 +519,14 @@
   padding: 0;
   border: 0;
   background: none;
-  color: #047857;
+  color: var(--primary);
   font-size: 12px;
   font-weight: 650;
   cursor: pointer;
   transition: color 0.18s var(--ease);
 }
 .auth-link:hover {
-  color: #065F46;
+  color: var(--primary);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -535,8 +535,8 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(640px 460px at 16% 10%, rgba(16, 185, 129, 0.12), transparent 62%),
-    linear-gradient(135deg, #03100B 0%, #07271C 55%, #041610 100%);
+    radial-gradient(640px 460px at 16% 10%, rgba(255, 255, 255, 0.10), transparent 62%),
+    linear-gradient(135deg, #0B0B0E 0%, #1A1A20 55%, #101014 100%);
 }
 
 /* ------------------------------ 登录页眼睛（黑白极简） ------------------------------ */

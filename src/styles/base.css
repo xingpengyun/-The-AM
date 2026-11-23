@@ -2,52 +2,53 @@
    Bonbon Admin · 运营工作台（糖果色板 · 加深版）
    ============================================================ */
 :root {
-  --paper: #FAFCFB;
-  --paper-2: #F4FAF6;
+  --paper: #FAFAFA;
+  --paper-2: #F4F4F5;
   --surface: #FFFFFF;
   --surface-strong: #FFFFFF;
-  --line: #E8F2ED;
-  --line-soft: #F1F8F4;
-  --ink: #18261F;
-  --ink-2: #4B5F57;
-  --ink-3: #7C8F87;
-  --brand: #0E7B68;
-  --brand-deep: #0A6656;
-  --brand-soft: #E3F5EE;
-  /* 导航选中胶囊：翡翠绿渐变 */
-  --nav-grad-from: #0E7B68;
-  --nav-grad-to: #10B981;
-  --nav-active-from: #0E7B68;
-  --nav-active-to: #10B981;
+  --line: #E4E4E7;
+  --line-soft: #F1F1F3;
+  --ink: #18181B;
+  --ink-2: #52525B;
+  --ink-3: #71717A;
+  --brand: #18181B;
+  --brand-deep: #09090B;
+  --brand-soft: #F4F4F5;
+  /* 导航选中胶囊：shadcn 默认中性 primary */
+  --nav-grad-from: #18181B;
+  --nav-grad-to: #3F3F46;
+  --nav-active-from: #18181B;
+  --nav-active-to: #3F3F46;
   --nav-active-ink: #FFFFFF;
-  /* 侧栏底色：极浅绿，与页面底色区分，反向圆角缺口才会显出来 */
-  --rail-bg: #EFF8F3;
-  --rail-ink: #7C8F87;
-  --rail-ink-strong: #22352C;
-  --green-deep: #0B7F60;
-  --green: #0E9E77;
-  --green-soft: #E2F7F0;
+  /* 侧栏底色：中性浅灰 */
+  --rail-bg: #F4F4F5;
+  --rail-ink: #71717A;
+  --rail-ink-strong: #18181B;
+  /* 旧语义色名保留，但统一指向默认色板（蓝 / 青 / 紫 / 琥珀），不再有绿色 */
+  --green-deep: #3F51B5;
+  --green: #5470C6;
+  --green-soft: #EEF2FF;
   --amber: #D99000;
   --amber-soft: #FBF1D8;
   --yellow: #D99000;
   --yellow-soft: #FBF1D8;
-  --indigo: #0E7B68;
-  --indigo-soft: #E3F5EE;
-  --purple: #10B981;
-  --purple-soft: #E2F7F0;
+  --indigo: #5470C6;
+  --indigo-soft: #EEF2FF;
+  --purple: #9A60B4;
+  --purple-soft: #F3E8FF;
   --pink: #D93B79;
   --pink-soft: #FCE8F0;
   --peach: #E8632A;
   --peach-soft: #FDEDE4;
-  --mint: #0E9E77;
-  --mint-soft: #E2F7F0;
+  --mint: #0EA5E9;
+  --mint-soft: #E0F2FE;
   --coral: #D93B79;
   --coral-soft: #FCE8F0;
   --clay: #E8632A;
-  --slate: #4B5F57;
+  --slate: #52525B;
   --radius: 24px;
   --radius-sm: 12px;
-  --shadow: 0 2px 4px rgba(12, 48, 38, .05), 0 30px 60px -42px rgba(14, 72, 58, .28);
+  --shadow: 0 2px 4px rgba(24, 24, 27, .05), 0 30px 60px -42px rgba(24, 24, 27, .22);
   --ease: cubic-bezier(.22, .68, .3, 1);
 }
 
@@ -63,9 +64,9 @@ body {
   text-rendering: optimizeLegibility;
 }
 button { font-family: inherit; }
-::selection { background: rgba(16, 185, 129, .18); }
+::selection { background: rgba(24, 24, 27, .12); }
 ::-webkit-scrollbar { width: 9px; height: 9px; }
-::-webkit-scrollbar-thumb { background: #C9DCD5; border-radius: 99px; border: 2px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-thumb { background: #D4D4D8; border-radius: 99px; border: 2px solid transparent; background-clip: content-box; }
 ::-webkit-scrollbar-track { background: transparent; }
 .ico { display: block; flex: 0 0 auto; }
 
@@ -126,7 +127,7 @@ button { font-family: inherit; }
   width: 60px; height: 60px; display: grid; place-items: center;
   border-radius: 18px; background: var(--brand); color: #FFFFFF;
   font-weight: 850; font-size: 27px; letter-spacing: -.04em;
-  box-shadow: 0 8px 18px -14px rgba(14, 123, 104, .75);
+  box-shadow: 0 8px 18px -14px rgba(24, 24, 27, .6);
 }
 
 .nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 14px 0 18px; }
@@ -177,7 +178,7 @@ button { font-family: inherit; }
 .nav-item:hover { color: var(--rail-ink-strong); }
 .nav-item.active:hover::after,
 .nav-home-btn.active:hover::after { background: transparent; }
-.nav-item:focus-visible { outline: 2px solid rgba(16, 185, 129, .9); outline-offset: -2px; }
+.nav-item:focus-visible { outline: 2px solid rgba(24, 24, 27, .8); outline-offset: -2px; }
 .nav-item.active {
   color: var(--brand);
   z-index: 2;
@@ -207,11 +208,11 @@ button { font-family: inherit; }
   position: absolute; top: 10px; right: 12px;
   min-width: 16px; height: 16px; padding: 0 4px;
   display: inline-grid; place-items: center;
-  border-radius: 99px; background: rgba(255, 255, 255, .16); color: #EAF4EF;
+  border-radius: 99px; background: rgba(255, 255, 255, .16); color: #FAFAFA;
   font-size: 9.5px; font-weight: 750; font-variant-numeric: tabular-nums;
   box-shadow: 0 0 0 2px var(--rail-bg);
 }
-.nav-item.active .nav-badge { background: rgba(16, 185, 129, .14); color: #0A6656; box-shadow: none; }
+.nav-item.active .nav-badge { background: rgba(24, 24, 27, .08); color: var(--ink); box-shadow: none; }
 
 .aside-foot { display: flex; flex-direction: column; align-items: center; gap: 8px; padding-top: 10px; }
 .rail-pro {
@@ -221,8 +222,8 @@ button { font-family: inherit; }
   cursor: pointer;
   transition: transform .18s var(--ease), box-shadow .18s var(--ease);
 }
-.rail-pro:hover { transform: translateY(-1px); box-shadow: 0 8px 16px -10px rgba(14, 123, 104, .5); }
-.aside-ver { font-size: 9px; color: #7C8F87; letter-spacing: .04em; }
+.rail-pro:hover { transform: translateY(-1px); box-shadow: 0 8px 16px -10px rgba(24, 24, 27, .35); }
+.aside-ver { font-size: 9px; color: var(--rail-ink); letter-spacing: .04em; }
 
 /* 顶栏 */
 .topbar {
@@ -238,7 +239,7 @@ button { font-family: inherit; }
 .topsearch { flex: 1; max-width: 380px; margin-left: 6px; }
 .kbd {
   padding: 1px 5px; border: 1px solid var(--line); border-radius: 4px;
-  background: #F4FAF7; color: var(--ink-3);
+  background: #F4F4F5; color: var(--ink-3);
   font-size: 9.5px; font-weight: 600; letter-spacing: .02em;
 }
 .top-actions { margin-left: auto; display: flex; align-items: center; gap: 6px; }
@@ -255,7 +256,7 @@ button { font-family: inherit; }
   border: 1px solid transparent; border-radius: 9px; background: transparent; cursor: pointer;
   transition: background .16s var(--ease), border-color .16s var(--ease);
 }
-.user:hover { background: #F4FAF7; border-color: var(--line); }
+.user:hover { background: #F4F4F5; border-color: var(--line); }
 .user-avatar { background: var(--brand) !important; color: #FFFFFF !important; font-weight: 650; }
 .user-meta { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.25; }
 .user-meta b { font-size: 12px; font-weight: 650; }
@@ -278,7 +279,7 @@ button { font-family: inherit; }
   font-size: 10.5px; font-weight: 600;
 }
 .page-sub { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 11.5px; color: var(--ink-3); }
-.live-dot { width: 5px; height: 5px; border-radius: 99px; background: var(--green); box-shadow: 0 0 0 3px rgba(34, 197, 94, .14); }
+.live-dot { width: 5px; height: 5px; border-radius: 99px; background: var(--green); box-shadow: 0 0 0 3px rgba(84, 112, 198, .14); }
 .page-actions { display: flex; align-items: center; gap: 8px; }
 
 /* 面板 */
@@ -295,7 +296,7 @@ button { font-family: inherit; }
 .map-card {
   display: flex; flex-direction: column; height: 100%; min-height: 0;
   padding: 22px 24px 20px; margin-bottom: 16px;
-  background: linear-gradient(180deg, #FFFFFF, #FAFCFB);
+  background: linear-gradient(180deg, #FFFFFF, #FAFBFD);
 }
 .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex: 0 0 auto; }
 .title-row { display: flex; align-items: flex-start; gap: 10px; min-width: 0; }
@@ -307,33 +308,41 @@ button { font-family: inherit; }
 .card-title { font-size: 14px; font-weight: 700; letter-spacing: -.01em; }
 .card-sub { margin-top: 3px; font-size: 11px; color: var(--ink-3); }
 .count-pill {
-  padding: 1px 6px; border: 1px solid rgba(16, 185, 129, .2); border-radius: 5px;
+  padding: 1px 6px; border: 1px solid rgba(24, 24, 27, .14); border-radius: 5px;
   background: var(--brand-soft); color: var(--brand-deep);
   font-size: 10.5px; font-weight: 700; font-variant-numeric: tabular-nums;
 }
 .map-badge {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 4px 9px; border: 1px solid var(--line); border-radius: 99px;
-  background: #F4FAF7; font-size: 10.5px; font-weight: 600; color: var(--ink-2);
+  background: #F4F4F5; font-size: 10.5px; font-weight: 600; color: var(--ink-2);
 }
-.map-badge i { width: 5px; height: 5px; border-radius: 99px; background: var(--brand); box-shadow: 0 0 0 3px rgba(16, 185, 129, .15); }
+.map-badge i { width: 5px; height: 5px; border-radius: 99px; background: var(--brand); box-shadow: 0 0 0 3px rgba(24, 24, 27, .12); }
+
+/* 地图卡跟随组件默认色板，不再使用绿色 */
+.map-card .card-ico { background: #EEF2FF; color: #4B5FC0; }
+.map-card .count-pill {
+  border-color: rgba(84, 112, 198, .24);
+  background: #EEF2FF;
+  color: #3F51B5;
+}
 
 .map-tabs {
   display: inline-flex; flex: 0 0 auto; padding: 3px;
-  border: 1px solid var(--line); border-radius: 9px; background: #F4FAF7;
+  border: 1px solid var(--line); border-radius: 9px; background: #F5F6FA;
 }
 .map-tabs button {
   padding: 4px 10px; border: 0; border-radius: 7px; background: transparent;
   font-size: 10.5px; font-weight: 650; color: var(--ink-3); cursor: pointer;
   transition: background .18s var(--ease), color .18s var(--ease);
 }
-.map-tabs button:hover { color: var(--brand-deep); }
-.map-tabs button.on { background: #FFFFFF; color: var(--brand-deep); box-shadow: 0 2px 6px -3px rgba(14, 72, 58, .28); }
+.map-tabs button:hover { color: #4B5FC0; }
+.map-tabs button.on { background: #FFFFFF; color: #3F51B5; box-shadow: 0 2px 6px -3px rgba(63, 81, 181, .28); }
 
 .map-body { flex: 1; min-height: 0; margin-top: 14px; }
 .map-plot {
   position: relative; height: 100%; min-height: 320px; border-radius: 14px;
-  background: radial-gradient(120% 90% at 50% 30%, #FFFFFF, #F1F8F4 72%);
+  background: radial-gradient(120% 90% at 50% 30%, #FFFFFF, #F6F7FA 72%);
   border: 1px solid var(--line-soft); overflow: hidden;
 }
 .map-canvas { position: absolute; inset: 0; }
@@ -357,8 +366,14 @@ button { font-family: inherit; }
   font-size: 10px; color: var(--ink-3);
   backdrop-filter: blur(8px);
 }
-.map-legend-dot { width: 6px; height: 6px; border-radius: 99px; background: #0E7B68; box-shadow: 0 0 0 3px rgba(16, 185, 129, .16); }
-.map-legend-arrow { color: #2FB98C; font-size: 10.5px; font-weight: 700; }
+.map-legend-dot {
+  width: 6px; height: 6px; border-radius: 99px;
+  background: var(--line);
+  box-shadow: 0 0 0 3px rgba(24, 24, 27, .06);
+}
+.map-legend-dot.hub { background: linear-gradient(135deg, #5470C6, #9A60B4); }
+.map-legend-dot.leaf { background: #73C0DE; }
+.map-legend-arrow { color: #9A60B4; font-size: 10.5px; font-weight: 700; }
 
 .map-overlay {
   position: absolute; inset: 0; z-index: 5;

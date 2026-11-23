@@ -6,43 +6,50 @@
  * 全局设计令牌（单一色值来源）
  * ------------------------------------------------------------------
  * 组件里只引用语义化类名 / CSS 变量，不再散落十六进制色值。
- * 主色沿用登录页那套翡翠绿；卡片糖果色只做浅底点缀。
+ * 主色回到 shadcn-vue 默认 neutral / zinc 体系，图表使用 ECharts 默认色板。
  */
 @layer base {
   :root {
-    --background: #fafcfb;
-    --foreground: #18261f;
+    --background: #fafafa;
+    --foreground: #18181b;
 
     --card: #ffffff;
-    --card-foreground: #18261f;
+    --card-foreground: #18181b;
     --popover: #ffffff;
-    --popover-foreground: #18261f;
+    --popover-foreground: #18181b;
 
-    --primary: #0e7b68;
-    --primary-hover: #0f8571;
-    --primary-active: #0b6b5b;
-    --primary-foreground: #ffffff;
+    --primary: #18181b;
+    --primary-hover: #27272a;
+    --primary-active: #09090b;
+    --primary-foreground: #fafafa;
 
-    --secondary: #e3f5ee;
-    --secondary-foreground: #0a6656;
-    --muted: #f4faf6;
-    --muted-foreground: #7c8f87;
-    --accent: #f2faf6;
-    --accent-foreground: #0b7f60;
+    --secondary: #f4f4f5;
+    --secondary-foreground: #18181b;
+    --muted: #f4f4f5;
+    --muted-foreground: #71717a;
+    --accent: #f4f4f5;
+    --accent-foreground: #18181b;
 
-    --destructive: #d93b79;
+    --destructive: #dc2626;
     --destructive-foreground: #ffffff;
-    --destructive-soft: #fce8f0;
+    --destructive-soft: #fee2e2;
     --destructive-ink: #991b1b;
 
-    --border: #e8f2ed;
-    --input: #e8f2ed;
-    --input-hover: #b9dcd1;
-    --ring: #10b981;
+    --border: #e4e4e7;
+    --input: #e4e4e7;
+    --input-hover: #d4d4d8;
+    --ring: #a1a1aa;
+
+    /* 图表色：ECharts 默认调色盘 */
+    --chart-1: #5470c6;
+    --chart-2: #73c0de;
+    --chart-3: #9a60b4;
+    --chart-4: #fc8452;
+    --chart-5: #fac858;
 
     /* 卡片糖果色：浅底 + 深一点的文字色，保证对比度 */
-    --candy-mint: #e2f7f0;
-    --candy-mint-ink: #0b7f60;
+    --candy-mint: #eef2f7;
+    --candy-mint-ink: #3f4a5a;
     --candy-peach: #fdede4;
     --candy-peach-ink: #b8541f;
     --candy-lemon: #fbf1d8;
@@ -57,16 +64,16 @@
     /* 登录页玻璃卡上的输入控件 */
     --login-field: rgba(255, 255, 255, 0.62);
     --login-field-strong: rgba(255, 255, 255, 0.82);
-    --login-border: rgba(6, 60, 44, 0.16);
-    --login-border-hover: rgba(6, 60, 44, 0.26);
-    --login-ink: #0a2a20;
-    --login-placeholder: rgba(9, 40, 30, 0.62);
-    --login-focus: #059669;
-    --login-ring: rgba(5, 150, 105, 0.22);
+    --login-border: rgba(24, 24, 27, 0.14);
+    --login-border-hover: rgba(24, 24, 27, 0.24);
+    --login-ink: #18181b;
+    --login-placeholder: rgba(24, 24, 27, 0.55);
+    --login-focus: #18181b;
+    --login-ring: rgba(24, 24, 27, 0.18);
 
-    --shadow-card: 0 2px 4px rgba(12, 48, 38, 0.05), 0 30px 60px -42px rgba(14, 72, 58, 0.28);
-    --shadow-pop: 0 18px 38px -24px rgba(12, 48, 38, 0.38), 0 2px 6px rgba(12, 48, 38, 0.06);
-    --shadow-button: 0 10px 20px -14px rgba(6, 50, 37, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    --shadow-card: 0 2px 4px rgba(24, 24, 27, 0.05), 0 30px 60px -42px rgba(24, 24, 27, 0.22);
+    --shadow-pop: 0 18px 38px -24px rgba(24, 24, 27, 0.3), 0 2px 6px rgba(24, 24, 27, 0.06);
+    --shadow-button: 0 10px 20px -14px rgba(24, 24, 27, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.16);
   }
 
   * {
