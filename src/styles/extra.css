@@ -375,50 +375,37 @@
     inset 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
 
-/* 卡片外沿流光：锥形渐变 + 环形遮罩，光带贴在描边外侧，不进入卡片内部 */
+/* 卡片外沿流光：单段窄光束沿描边环行（参考图：细线、双端渐隐、无大范围光晕） */
 @property --glow-angle {
   syntax: "<angle>";
   inherits: false;
   initial-value: 0deg;
 }
-.auth-card {
-  --glow-angle: 0deg;
-}
-.auth-card::before,
-.auth-card::after {
+.auth-card::before {
   content: "";
   position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
   pointer-events: none;
   background: conic-gradient(
     from var(--glow-angle),
-    rgba(16, 185, 129, 0) 0deg,
-    rgba(16, 185, 129, 0) 228deg,
-    rgba(16, 185, 129, 0.55) 268deg,
-    #10b981 292deg,
-    #6ee7b7 300deg,
-    #10b981 308deg,
-    rgba(16, 185, 129, 0.5) 330deg,
-    rgba(16, 185, 129, 0) 360deg
+    rgba(132, 204, 22, 0) 212deg,
+    rgba(132, 204, 22, 0.12) 228deg,
+    rgba(132, 204, 22, 0.32) 242deg,
+    #84cc16 256deg,
+    #6ee7b7 272deg,
+    #10b981 288deg,
+    #0d9488 300deg,
+    rgba(13, 148, 136, 0.22) 312deg,
+    rgba(13, 148, 136, 0) 326deg
   );
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
+  filter: drop-shadow(0 0 3px rgba(16, 185, 129, 0.45));
   animation: auth-glow 8s linear infinite;
-}
-/* 贴边窄亮带 */
-.auth-card::before {
-  inset: -1.5px;
-  padding: 1.5px;
-  border-radius: calc(var(--radius) + 3.5px);
-}
-/* 一层薄柔光，避免多层 blur 影响性能 */
-.auth-card::after {
-  inset: -7px;
-  padding: 7px;
-  border-radius: calc(var(--radius) + 9px);
-  filter: blur(7px);
-  opacity: 0.5;
 }
 @keyframes auth-glow {
   to {
@@ -426,12 +413,10 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .auth-card::before,
-  .auth-card::after {
+  .auth-card::before {
     animation: none;
   }
 }
-
 /* 不支持 backdrop-filter：退化为浅薄荷实底，深色文字仍清晰 */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .auth-card {
