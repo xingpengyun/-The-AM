@@ -150,12 +150,16 @@ function forgot(): void {
     <!-- 登录卡片：相对整个视口居中 -->
     <section class="auth-panel">
       <div class="auth-card">
-        <!-- 外沿流光：SVG 描边沿卡片轮廓环行，粗细恒定 -->
+        <!-- 外沿流光：SVG 描边沿卡片轮廓环行，粗细恒定、糖果多色彗尾 -->
         <svg class="auth-beam" aria-hidden="true" focusable="false">
-          <rect class="auth-beam__tail-1" x="0" y="0" width="100%" height="100%" rx="26" pathLength="100" />
-          <rect class="auth-beam__tail-2" x="0" y="0" width="100%" height="100%" rx="26" pathLength="100" />
-          <rect class="auth-beam__mid" x="0" y="0" width="100%" height="100%" rx="26" pathLength="100" />
-          <rect class="auth-beam__head" x="0" y="0" width="100%" height="100%" rx="26" pathLength="100" />
+          <rect class="auth-beam__t1" x="0" y="0" width="100%" height="100%" rx="26" pathLength="100" />
+          <rect class="auth-beam__t2" x="0" y="0" width="100%" height="100%" rx="26" pathLength="100" />
+          <rect class="auth-beam__t3" x="0" y="0" width="100%" height="100%" rx="26" pathLength="100" />
+          <rect class="auth-beam__t4" x="0" y="0" width="100%" height="100%" rx="26" pathLength="100" />
+          <rect class="auth-beam__t5" x="0" y="0" width="100%" height="100%" rx="26" pathLength="100" />
+          <rect class="auth-beam__t6" x="0" y="0" width="100%" height="100%" rx="26" pathLength="100" />
+          <rect class="auth-beam__t7" x="0" y="0" width="100%" height="100%" rx="26" pathLength="100" />
+          <rect class="auth-beam__t8" x="0" y="0" width="100%" height="100%" rx="26" pathLength="100" />
         </svg>
 
         <div class="login-eyes"><EyeRobot /></div>

@@ -383,7 +383,7 @@
   height: calc(100% + 2px);
   overflow: visible;
   pointer-events: none;
-  filter: drop-shadow(0 0 2.5px rgba(16, 185, 129, 0.45));
+  filter: drop-shadow(0 0 2px rgba(94, 234, 212, 0.3)) drop-shadow(0 0 5px rgba(167, 139, 250, 0.12));
 }
 .auth-beam rect {
   fill: none;
@@ -392,50 +392,95 @@
   animation-duration: 8s;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
+  will-change: stroke-dashoffset;
 }
-/* 彗星尾：同一条路径上叠四段，终点对齐，亮度从尾到头递增 */
-.auth-beam__tail-1 {
-  stroke: #0d9488;
-  opacity: 0.22;
-  stroke-dasharray: 20 80;
+/* 糖果多色彗尾：粉 → 紫 → 蓝 → 青 → 薄荷绿 → 高光，尾长头短、同一终点，两端自然消隐 */
+.auth-beam__t1 {
+  stroke: #f0abfc;
+  opacity: 0.18;
+  stroke-dasharray: 30 70;
   stroke-dashoffset: 0;
-  animation-name: beam-run-1;
+  animation-name: beam-a;
 }
-.auth-beam__tail-2 {
-  stroke: #0d9488;
-  opacity: 0.5;
+.auth-beam__t2 {
+  stroke: #c4b5fd;
+  opacity: 0.26;
+  stroke-dasharray: 26 74;
+  stroke-dashoffset: -4;
+  animation-name: beam-b;
+}
+.auth-beam__t3 {
+  stroke: #a5b4fc;
+  opacity: 0.36;
+  stroke-dasharray: 22 78;
+  stroke-dashoffset: -8;
+  animation-name: beam-c;
+}
+.auth-beam__t4 {
+  stroke: #93c5fd;
+  opacity: 0.48;
+  stroke-dasharray: 18 82;
+  stroke-dashoffset: -12;
+  animation-name: beam-d;
+}
+.auth-beam__t5 {
+  stroke: #7dd3fc;
+  opacity: 0.6;
   stroke-dasharray: 14 86;
-  stroke-dashoffset: -6;
-  animation-name: beam-run-2;
-}
-.auth-beam__mid {
-  stroke: #10b981;
-  opacity: 0.9;
-  stroke-dasharray: 9 91;
-  stroke-dashoffset: -11;
-  animation-name: beam-run-3;
-}
-.auth-beam__head {
-  stroke: #a7f3d0;
-  stroke-dasharray: 4 96;
   stroke-dashoffset: -16;
-  animation-name: beam-run-4;
+  animation-name: beam-e;
 }
-@keyframes beam-run-1 {
+.auth-beam__t6 {
+  stroke: #5eead4;
+  opacity: 0.72;
+  stroke-dasharray: 10 90;
+  stroke-dashoffset: -20;
+  animation-name: beam-f;
+}
+.auth-beam__t7 {
+  stroke: #34d399;
+  opacity: 0.88;
+  stroke-dasharray: 6 94;
+  stroke-dashoffset: -24;
+  animation-name: beam-g;
+}
+.auth-beam__t8 {
+  stroke: #a7f3d0;
+  stroke-dasharray: 3 97;
+  stroke-dashoffset: -27;
+  animation-name: beam-h;
+}
+@keyframes beam-a {
   from { stroke-dashoffset: 0; }
   to { stroke-dashoffset: -100; }
 }
-@keyframes beam-run-2 {
-  from { stroke-dashoffset: -6; }
-  to { stroke-dashoffset: -106; }
+@keyframes beam-b {
+  from { stroke-dashoffset: -4; }
+  to { stroke-dashoffset: -104; }
 }
-@keyframes beam-run-3 {
-  from { stroke-dashoffset: -11; }
-  to { stroke-dashoffset: -111; }
+@keyframes beam-c {
+  from { stroke-dashoffset: -8; }
+  to { stroke-dashoffset: -108; }
 }
-@keyframes beam-run-4 {
+@keyframes beam-d {
+  from { stroke-dashoffset: -12; }
+  to { stroke-dashoffset: -112; }
+}
+@keyframes beam-e {
   from { stroke-dashoffset: -16; }
   to { stroke-dashoffset: -116; }
+}
+@keyframes beam-f {
+  from { stroke-dashoffset: -20; }
+  to { stroke-dashoffset: -120; }
+}
+@keyframes beam-g {
+  from { stroke-dashoffset: -24; }
+  to { stroke-dashoffset: -124; }
+}
+@keyframes beam-h {
+  from { stroke-dashoffset: -27; }
+  to { stroke-dashoffset: -127; }
 }
 @media (prefers-reduced-motion: reduce) {
   .auth-beam rect {
