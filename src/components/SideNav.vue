@@ -18,16 +18,18 @@ const pillPath =
   'M0 32A16 16 0 0 1 16 16H76A16 16 0 0 0 92 0V96A16 16 0 0 0 76 80H16A16 16 0 0 1 0 64Z'
 
 const isHome = computed(() => route.name === 'home')
+const isOverview = computed(() => route.name === 'overview')
 const currentDeptKey = computed<DepartmentKey | null>(() => {
   const key = route.params.dept
   return isDepartmentKey(key) ? key : null
 })
 
-/* 选中项在导航里的序号：首页 0，部门从 1 开始；无选中时 -1 */
+/* 选中项在导航里的序号：首页 0，总览 1，部门从 2 开始；无选中时 -1 */
 const activeIndex = computed(() => {
   if (isHome.value) return 0
+  if (isOverview.value) return 1
   if (!currentDeptKey.value) return -1
-  return departments.findIndex((d) => d.key === currentDeptKey.value) + 1
+  return departments.findIndex((d) => d.key === currentDeptKey.value) + 2
 })
 
 /* 共享的选中胶囊：只保留一个元素，位置/尺寸随选中项变化做过渡 */
@@ -76,6 +78,12 @@ function goHome(): void {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
+function goOverview(): void {
+  if (isOverview.value) return
+  router.push('/overview')
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
 function goDept(key: DepartmentKey): void {
   if (key === currentDeptKey.value) return
   router.push(`/dept/${key}`)
@@ -115,6 +123,20 @@ function goDept(key: DepartmentKey): void {
               @click="goHome"
             >
               <Ico class="nav-ico" name="home" :size="23" />
+            </button>
+          </template>
+        </Tooltip>
+
+        <Tooltip content="总览" side="right" :delay="120">
+          <template #trigger>
+            <button
+              class="nav-item"
+              :class="{ active: isOverview }"
+              aria-label="总览"
+              :aria-current="isOverview ? 'page' : undefined"
+              @click="goOverview"
+            >
+              <Ico class="nav-ico" name="grid" :size="23" />
             </button>
           </template>
         </Tooltip>

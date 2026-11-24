@@ -1,6 +1,7 @@
 import type { RouteRecordRaw } from 'vue-router'
 import { createRouter, createWebHistory } from 'vue-router'
 import DeptOverview from '@/views/DeptOverview.vue'
+import OverviewView from '@/views/OverviewView.vue'
 import StageBoard from '@/views/StageBoard.vue'
 import DeptTodo from '@/views/DeptTodo.vue'
 import LoginView from '@/views/LoginView.vue'
@@ -17,6 +18,7 @@ const routes: RouteRecordRaw[] = [
   { path: '/login', name: 'login', component: LoginView, meta: { public: true } },
   { path: '/', redirect: '/home' },
   { path: '/home', name: 'home', component: DeptOverview, props: { global: true } },
+  { path: '/overview', name: 'overview', component: OverviewView },
   { path: '/dept/:dept', name: 'dept-overview', component: DeptOverview },
   { path: '/dept/:dept/stage/:stage', name: 'dept-stage', component: StageBoard },
   { path: '/dept/:dept/todo', name: 'dept-todo', component: DeptTodo },
@@ -63,6 +65,10 @@ router.afterEach((to) => {
   }
   if (to.name === 'home') {
     document.title = 'Bonbon Admin · 首页'
+    return
+  }
+  if (to.name === 'overview') {
+    document.title = 'Bonbon Admin · 总览'
     return
   }
   const deptKey = typeof to.params.dept === 'string' ? to.params.dept : ''

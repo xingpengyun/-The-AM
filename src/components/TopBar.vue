@@ -21,6 +21,7 @@ const topSearch = ref('')
 const searchRef = ref<InstanceType<typeof Input> | null>(null)
 
 const isHome = computed(() => route.name === 'home')
+const isOverview = computed(() => route.name === 'overview')
 const dept = computed(() => departmentOfParam(route.params.dept))
 const stage = computed(() => stageOfParam(route.params.stage))
 
@@ -86,11 +87,15 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
     <div class="crumb">
       <nav class="flex items-center gap-1.5 text-[12px] text-muted-foreground" aria-label="面包屑">
         <a class="crumb-link" href="/home" @click.prevent="goHome">首页</a>
-        <template v-if="!isHome">
+        <template v-if="isOverview">
+          <span class="opacity-60">/</span>
+          <span class="text-foreground">总览</span>
+        </template>
+        <template v-else-if="!isHome">
           <span class="opacity-60">/</span>
           <span class="text-foreground">{{ dept.name }}</span>
         </template>
-        <template v-if="!isHome && stage">
+        <template v-if="!isHome && !isOverview && stage">
           <span class="opacity-60">/</span>
           <span class="text-foreground">{{ stage.no }} {{ stage.name }}</span>
         </template>
