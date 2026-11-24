@@ -1,7 +1,2 @@
-import { clsx, type ClassValue } from 'clsx'
-import { twMerge } from 'tailwind-merge'
-
-/* shadcn-vue 标准工具：合并条件类名，并消解 Tailwind 冲突 */
-export function cn(...inputs: ClassValue[]): string {
-  return twMerge(clsx(inputs))
-}
+/* shadcn-vue 官方写法：cn 由 cn 包提供，这里只做统一出口 */
+export { cn } from 'cn'

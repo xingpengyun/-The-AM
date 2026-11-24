@@ -195,7 +195,7 @@ function metricRow(label: string, value: string, active: boolean, color: string)
   return (
     `<div style="display:flex;justify-content:space-between;gap:16px;margin-top:3px;font-size:10.5px;color:#7A8C95;">` +
     `<span>${label}</span>` +
-    `<b style="color:${active ? color : '#25334A'};font-variant-numeric:tabular-nums;">${value}</b></div>`
+    `<b style="color:${active ? color : '#334155'};font-variant-numeric:tabular-nums;">${value}</b></div>`
   )
 }
 
@@ -215,7 +215,7 @@ function tooltipHtml(params: { dataType?: string; data?: unknown }): string {
     `<div style="display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;">` +
     `<i style="width:5px;height:5px;border-radius:99px;background:${node.color};"></i>${node.province}</div>` +
     `<div style="display:flex;justify-content:space-between;gap:16px;margin-top:5px;font-size:10.5px;color:#7A8C95;">` +
-    `<span>省会 / 角色</span><b style="color:#25334A;">${node.city} · ${roleText}</b></div>` +
+    `<span>省会 / 角色</span><b style="color:#334155;">${node.city} · ${roleText}</b></div>` +
     metricRow('门店数', `${fmtNum(node.stores)} 家`, metric.value === 'stores', node.color) +
     metricRow('订单量', `${fmtNum(node.orders)} 单`, metric.value === 'orders', node.color) +
     metricRow('营收', fmtMoneyShort(node.amount), metric.value === 'amount', node.color)
@@ -244,18 +244,18 @@ function buildOption(): EChartsCoreOption {
       layoutCenter: ['50%', '50%'],
       layoutSize: '106%',
       itemStyle: {
-        areaColor: '#F6F7FA',
-        borderColor: '#E1E5ED',
+        areaColor: '#F7FBFC',
+        borderColor: '#DCE8ED',
         borderWidth: 0.8,
         shadowColor: 'rgba(24,24,27,.08)',
         shadowBlur: 12
       },
       emphasis: {
-        itemStyle: { areaColor: '#ECEFF7', borderColor: '#C7CEE0' },
-        label: { color: '#3F51B5' }
+        itemStyle: { areaColor: '#E8F4F9', borderColor: '#B8D9E6' },
+        label: { color: '#0369A1' }
       },
       select: { disabled: true },
-      label: { show: true, color: '#8A90A0', fontSize: 9.5 }
+      label: { show: true, color: '#7A8C99', fontSize: 9.5 }
     },
     series: [
       {
@@ -266,7 +266,7 @@ function buildOption(): EChartsCoreOption {
         label: { show: false },
         emphasis: {
           scale: 1.3,
-          label: { show: true, color: '#3F51B5', fontSize: 10, fontWeight: 600 }
+          label: { show: true, color: '#0369A1', fontSize: 10, fontWeight: 600 }
         },
         edgeSymbol: ['none', 'arrow'],
         edgeSymbolSize: 5,

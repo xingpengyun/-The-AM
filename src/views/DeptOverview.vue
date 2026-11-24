@@ -6,7 +6,7 @@ import ProvinceMap from '@/components/ProvinceMap.vue'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { echarts, type EChartsCoreOption } from '@/lib/echarts'
-import { CHART_COLORS } from '@/lib/palette'
+import { CHART_COLORS, STATUS_COLORS } from '@/lib/palette'
 import { departmentOfParam } from '@/data/org'
 import {
   fmtNum,
@@ -94,7 +94,7 @@ function salesOption(): EChartsCoreOption {
     grid: { left: 2, right: 2, top: 8, bottom: 2 },
     tooltip: {
       trigger: 'axis',
-      axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(84,112,198,.06)' } },
+      axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(14,165,233,.06)' } },
       backgroundColor: 'rgba(255,255,255,.98)',
       borderColor: 'rgba(35,38,59,.10)',
       borderWidth: 1,
@@ -137,11 +137,11 @@ function memberOption(): EChartsCoreOption {
         smooth: true,
         symbol: 'none',
         data: memberSpark,
-        lineStyle: { width: 2, color: CHART_COLORS[1] },
+        lineStyle: { width: 2, color: CHART_COLORS[2] },
         areaStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: 'rgba(115,192,222,.22)' },
-            { offset: 1, color: 'rgba(115,192,222,0)' }
+            { offset: 0, color: 'rgba(139,92,246,.20)' },
+            { offset: 1, color: 'rgba(139,92,246,0)' }
           ])
         }
       }
@@ -156,7 +156,7 @@ function trendOption(): EChartsCoreOption {
     grid: { left: 2, right: 2, top: 6, bottom: 4 },
     tooltip: {
       trigger: 'axis',
-      axisPointer: { type: 'line', lineStyle: { color: 'rgba(84,112,198,.25)' }, label: axisPointerLabel },
+      axisPointer: { type: 'line', lineStyle: { color: 'rgba(14,165,233,.25)' }, label: axisPointerLabel },
       backgroundColor: 'rgba(255,255,255,.98)',
       borderColor: 'rgba(35,38,59,.10)',
       borderWidth: 1,
@@ -187,11 +187,11 @@ function trendOption(): EChartsCoreOption {
         smooth: true,
         symbol: 'none',
         data: openedSeries,
-        lineStyle: { width: 2, color: CHART_COLORS[0] },
+        lineStyle: { width: 2, color: CHART_COLORS[1] },
         areaStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: 'rgba(84,112,198,.2)' },
-            { offset: 1, color: 'rgba(84,112,198,0)' }
+            { offset: 0, color: 'rgba(16,185,129,.18)' },
+            { offset: 1, color: 'rgba(16,185,129,0)' }
           ])
         }
       },
@@ -201,7 +201,7 @@ function trendOption(): EChartsCoreOption {
         smooth: true,
         symbol: 'none',
         data: closedSeries,
-        lineStyle: { width: 1.6, color: CHART_COLORS[5] }
+        lineStyle: { width: 1.6, color: STATUS_COLORS.negative }
       }
     ]
   }
@@ -322,7 +322,7 @@ onBeforeUnmount(() => {
                 <h4>门店增长趋势</h4>
                 <p>新开 / 关闭 · 近 12 个月</p>
               </div>
-              <span class="pill">月度</span>
+              <span class="pill neutral">月度</span>
             </div>
             <div class="trend-big">+{{ fmtNum(netAdd) }}<em>净增</em></div>
             <div ref="trendEl" class="trend-chart"></div>
@@ -360,14 +360,14 @@ onBeforeUnmount(() => {
           <Card class="dash-card rings-card">
             <div class="ring">
               <div class="ring-g">
-                <div class="ring-dial" :style="{ '--pct': directShare + '%', '--ring-color': CHART_COLORS[0] }"></div>
+                <div class="ring-dial" :style="{ '--pct': directShare + '%', '--ring-color': 'var(--tone-violet)' }"></div>
                 <b>{{ directShare }}%</b>
               </div>
               <span>直营占比</span>
             </div>
             <div class="ring">
               <div class="ring-g">
-                <div class="ring-dial" :style="{ '--pct': franchiseShare + '%', '--ring-color': CHART_COLORS[1] }"></div>
+                <div class="ring-dial" :style="{ '--pct': franchiseShare + '%', '--ring-color': 'var(--tone-sky)' }"></div>
                 <b>{{ franchiseShare }}%</b>
               </div>
               <span>加盟占比</span>
@@ -418,8 +418,8 @@ onBeforeUnmount(() => {
   font-size: 10.5px; font-weight: 600; color: var(--ink-2);
 }
 .live-dot {
-  width: 6px; height: 6px; border-radius: 99px; background: var(--brand);
-  box-shadow: 0 0 0 3px rgba(24, 24, 27, .12);
+  width: 6px; height: 6px; border-radius: 99px; background: var(--tone-jade);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, .16);
   animation: livePulse 2.4s infinite ease-in-out;
 }
 @keyframes livePulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
@@ -444,15 +444,15 @@ onBeforeUnmount(() => {
 }
 .eyebrow {
   font-size: 8.5px; font-weight: 750; letter-spacing: .18em;
-  text-transform: uppercase; color: var(--brand);
+  text-transform: uppercase; color: var(--tone-jade-ink);
 }
 .kpi-title { margin-top: 6px; font-size: 11.5px; font-weight: 600; color: var(--ink-2); }
 .kpi-num {
   display: flex; align-items: baseline; gap: 5px; margin-top: 2px;
   font-size: 42px; font-weight: 750; line-height: 1; letter-spacing: -.045em;
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: tabular-nums; color: var(--tone-jade-ink);
 }
-.kpi-num small { font-size: 12px; font-weight: 600; color: var(--ink-3); letter-spacing: 0; }
+.kpi-num small { font-size: 12px; font-weight: 600; color: var(--tone-jade-ink); opacity: .65; letter-spacing: 0; }
 .kpi-meta {
   display: flex; align-items: center; gap: 8px; margin-top: 10px;
   font-size: 10px; color: var(--ink-3); line-height: 1.4;
@@ -460,7 +460,7 @@ onBeforeUnmount(() => {
 .delta {
   display: inline-flex; align-items: center; gap: 3px; flex: 0 0 auto;
   padding: 2px 6px; border-radius: 99px;
-  background: rgba(24, 24, 27, .06); color: var(--ink-2);
+  background: var(--tone-jade-soft); color: var(--tone-jade-ink);
   font-size: 10px; font-weight: 700; font-variant-numeric: tabular-nums;
 }
 
@@ -481,9 +481,11 @@ onBeforeUnmount(() => {
   margin-left: 5px; font-style: normal; font-size: 9.5px;
   font-weight: 600; color: var(--ink-3);
 }
-.split-bar { height: 4px; margin: 5px 0 8px; border-radius: 99px; background: #F0F0F2; overflow: hidden; }
-.split-bar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #93C5FD, #5470C6); }
-.split-bar i.sky { background: linear-gradient(90deg, #7DD3FC, #38BDF8); }
+.split-ic.v ~ .split-vl em { color: var(--tone-violet-ink); }
+.split-ic.s ~ .split-vl em { color: var(--tone-sky-ink); }
+.split-bar { height: 4px; margin: 5px 0 8px; border-radius: 99px; background: #F1F5F9; overflow: hidden; }
+.split-bar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #C4B5FD, #8B5CF6); }
+.split-bar i.sky { background: linear-gradient(90deg, #7DD3FC, #0EA5E9); }
 
 .sales-card, .member-card { flex: 1; display: flex; flex-direction: column; }
 .mini-hd { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; flex: 0 0 auto; }
@@ -491,11 +493,12 @@ onBeforeUnmount(() => {
 .mini-hd p { margin: 3px 0 0; font-size: 9.5px; color: var(--ink-3); }
 .pill {
   flex: 0 0 auto; padding: 2px 6px; border-radius: 99px;
-  background: var(--brand-soft); color: var(--brand-deep);
+  background: var(--tone-jade-soft); color: var(--tone-jade-ink);
   font-size: 9.5px; font-weight: 700; font-variant-numeric: tabular-nums;
 }
+.pill.neutral { background: var(--muted); color: var(--muted-foreground); }
 .sales-val { display: flex; align-items: baseline; gap: 6px; margin-top: 4px; flex: 0 0 auto; }
-.sales-val b { font-size: 20px; font-weight: 750; letter-spacing: -.035em; font-variant-numeric: tabular-nums; }
+.sales-val b { font-size: 20px; font-weight: 750; letter-spacing: -.035em; font-variant-numeric: tabular-nums; color: var(--tone-sky-ink); }
 .sales-val span { font-size: 9.5px; color: var(--ink-3); }
 .chart-box { flex: 1; min-height: 0; width: 100%; }
 .axis-x {
@@ -508,8 +511,9 @@ onBeforeUnmount(() => {
 .mem-num {
   display: flex; align-items: baseline; gap: 4px; margin-top: 4px;
   font-size: 21px; font-weight: 750; letter-spacing: -.035em; font-variant-numeric: tabular-nums;
+  color: var(--tone-violet-ink);
 }
-.mem-num span { font-size: 9.5px; font-weight: 600; color: var(--ink-3); letter-spacing: 0; }
+.mem-num span { font-size: 9.5px; font-weight: 600; color: var(--tone-violet-ink); opacity: .65; letter-spacing: 0; }
 .mem-sub {
   display: flex; gap: 14px; flex: 0 0 auto; margin-top: 7px;
   font-size: 9.5px; color: var(--ink-3);
@@ -522,20 +526,23 @@ onBeforeUnmount(() => {
 .trend-big {
   margin-top: 5px; font-size: 26px; font-weight: 750;
   letter-spacing: -.04em; line-height: 1.1; font-variant-numeric: tabular-nums;
+  color: var(--tone-jade-ink);
 }
 .trend-big em { margin-left: 5px; font-style: normal; font-size: 10px; font-weight: 600; color: var(--ink-3); }
 .trend-chart { height: 78px; margin-top: 4px; width: 100%; }
 .chart-legend { display: flex; gap: 12px; margin-top: 3px; font-size: 9.5px; color: var(--ink-3); }
 .chart-legend span { display: inline-flex; align-items: center; gap: 4px; }
 .chart-legend i { width: 7px; height: 7px; border-radius: 99px; }
-.chart-legend i.open { background: #5470C6; }
-.chart-legend i.close { background: #EE6666; }
+.chart-legend i.open { background: var(--tone-jade); }
+.chart-legend i.close { background: var(--tone-rose); }
 .stats3 {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;
   margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line-soft);
 }
 .stats3 span { display: block; font-size: 9px; color: var(--ink-3); }
 .stats3 b { display: block; margin-top: 2px; font-size: 12.5px; font-weight: 750; font-variant-numeric: tabular-nums; }
+.stats3 div:nth-child(1) b, .stats3 div:nth-child(3) b { color: var(--tone-jade-ink); }
+.stats3 div:nth-child(2) b { color: var(--tone-rose-ink); }
 
 .rank-card { flex: 1; display: flex; flex-direction: column; }
 .rank-ico {
@@ -548,18 +555,22 @@ onBeforeUnmount(() => {
 }
 .rank-item { display: grid; grid-template-columns: 15px minmax(0, 1fr); align-items: center; gap: 8px; }
 .rank-idx { font-size: 10px; font-weight: 750; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.rank-item:nth-child(1) .rank-idx { color: var(--tone-amber-ink); }
+.rank-item:nth-child(2) .rank-idx { color: var(--tone-sky-ink); }
+.rank-item:nth-child(3) .rank-idx { color: var(--tone-violet-ink); }
 .rank-main { min-width: 0; }
 .rank-line { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
 .rank-line b { font-size: 11.5px; font-weight: 650; }
 .rank-line span { font-size: 9.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
-.rank-bar { height: 3px; margin-top: 4px; border-radius: 99px; background: #F0F0F2; overflow: hidden; }
-.rank-bar span { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #93C5FD, #5470C6); }
+.rank-bar { height: 3px; margin-top: 4px; border-radius: 99px; background: #F1F5F9; overflow: hidden; }
+.rank-bar span { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #7DD3FC, #0EA5E9); }
+.rank-item:nth-child(1) .rank-bar span { background: linear-gradient(90deg, #FCD34D, #F59E0B); }
 .rank-foot {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
   margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line-soft);
   font-size: 9px; color: var(--ink-3);
 }
-.rank-foot b { color: var(--brand-deep); font-weight: 700; }
+.rank-foot b { color: var(--tone-sky-ink); font-weight: 700; }
 
 .rings-card { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-around; gap: 10px; }
 .ring { display: flex; flex-direction: column; align-items: center; gap: 6px; box-shadow: none; outline: none; }
@@ -567,7 +578,7 @@ onBeforeUnmount(() => {
 .ring-g { position: relative; width: 54px; height: 54px; }
 .ring-dial {
   width: 54px; height: 54px; border-radius: 50%;
-  background: conic-gradient(var(--ring-color, #5470C6) var(--pct), #E4E4E7 0);
+  background: conic-gradient(var(--ring-color, var(--tone-violet)) var(--pct), #E4E4E7 0);
   -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 7px), #000 calc(100% - 6px));
   mask: radial-gradient(farthest-side, transparent calc(100% - 7px), #000 calc(100% - 6px));
 }

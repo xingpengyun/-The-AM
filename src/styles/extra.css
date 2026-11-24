@@ -64,7 +64,7 @@
   cursor: pointer;
 }
 .crumb-link:hover {
-  color: var(--brand);
+  color: var(--tone-indigo-ink);
 }
 
 /* 导航选中块由按钮自身绘制：只需把图标抬到胶囊上层 */
@@ -137,18 +137,18 @@
   font-variant-numeric: tabular-nums;
 }
 .stage-chip:hover {
-  background: #F4F4F5;
-  border-color: rgba(24, 24, 27, 0.18);
-  color: var(--ink);
+  background: var(--tone-indigo-soft);
+  border-color: rgba(79, 70, 229, 0.24);
+  color: var(--tone-indigo-ink);
 }
 .stage-chip.dim {
   opacity: 0.45;
 }
 .stage-chip.on {
-  background: var(--brand);
-  border-color: var(--brand);
+  background: linear-gradient(135deg, var(--tone-indigo) 0%, var(--tone-violet) 100%);
+  border-color: transparent;
   color: #FFFFFF;
-  box-shadow: 0 8px 18px -12px rgba(24, 24, 27, 0.35);
+  box-shadow: 0 8px 18px -12px rgba(79, 70, 229, 0.55);
 }
 .stage-chip.on b {
   color: rgba(255, 255, 255, 0.72);
