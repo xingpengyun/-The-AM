@@ -10,17 +10,15 @@ import { stageOfParam } from '@/data/org'
 const route = useRoute()
 const router = useRouter()
 const isHome = computed(() => route.name === 'home')
-const isOverview = computed(() => route.name === 'overview')
 /* 登录页为独立全屏布局，不渲染侧栏 / 顶栏 */
 const isAuthPage = computed(() => route.meta.public === true)
 
-/* 导航顺序：首页 0 → 总览 5 → 部门概览 10 → 待办 20 → 阶段 31–41（按 S1–S11） */
+/* 导航顺序：首页 0 → 部门概览 10 → 待办 20 → 阶段 31–41（按 S1–S11） */
 function orderOf(r: RouteLocationNormalized): number {
   const stage = stageOfParam(r.params.stage)
   if (stage) return 30 + Number(stage.no.slice(1))
   if (r.name === 'dept-todo') return 20
   if (r.name === 'dept-overview') return 10
-  if (r.name === 'overview') return 5
   if (r.name === 'home') return 0
   return 25
 }
@@ -42,7 +40,7 @@ router.beforeEach((to, from) => {
     <SideNav />
     <div class="main">
       <TopBar />
-      <StageAxis v-if="!isHome && !isOverview" />
+      <StageAxis v-if="!isHome" />
       <main class="content">
         <RouterView v-slot="{ Component, route }">
           <Transition :name="`page-${pageDir}`" mode="out-in">
