@@ -25,3 +25,8 @@ Thumbs.db
 # 缓存
 .cache/
 .vite/
+
+# 本地校验截图与工具产物
+/glass-*.png
+.trae/
+.trae-html-share-packages/

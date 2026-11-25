@@ -123,15 +123,6 @@ button { font-family: inherit; }
 }
 .brand, .nav, .aside-foot { position: relative; z-index: 1; }
 .brand { display: flex; justify-content: center; padding: 22px 0 6px 8px; }
-.brand-mark {
-  width: 60px; height: 60px; display: grid; place-items: center;
-  border-radius: 18px;
-  background: linear-gradient(145deg, var(--indigo) 0%, var(--purple) 55%, var(--pink) 100%);
-  border: 1px solid rgba(255, 255, 255, .22);
-  color: #FFFFFF;
-  font-weight: 850; font-size: 27px; letter-spacing: -.04em;
-  box-shadow: 0 10px 20px -14px rgba(99, 102, 241, .7), inset 0 1px 0 rgba(255, 255, 255, .32);
-}
 
 .nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 14px 0 18px; }
 .nav::-webkit-scrollbar { width: 0; }

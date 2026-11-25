@@ -1,1 +1,2 @@
-export { default as Card } from './Card.vue'
+export { Card, cardVariants } from './card'
+export type { CardProps, CardTone } from './card'

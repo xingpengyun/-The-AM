@@ -1,1 +1,2 @@
-export { default as Input } from './Input.vue'
+export { Input } from './input'
+export type { InputProps } from './input'

@@ -520,3 +520,55 @@
   }
 }
 
+/* ------------------------------ React 路由页面入场（仅入场，方向来自 route-order） ------------------------------ */
+.page-enter.page-next {
+  animation: pageNextIn 0.24s ease-out;
+}
+.page-enter.page-prev {
+  animation: pagePrevIn 0.24s ease-out;
+}
+@keyframes pageNextIn {
+  from {
+    opacity: 0;
+    transform: translate3d(26px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes pagePrevIn {
+  from {
+    opacity: 0;
+    transform: translate3d(-26px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-enter.page-next,
+  .page-enter.page-prev {
+    animation: none;
+  }
+}
+
+/* 阶段轴 chip：替代 v-motion 的 hover / tap 缩放 */
+.stage-chip {
+  transition: background 0.16s var(--ease), color 0.16s var(--ease), border-color 0.16s var(--ease),
+    transform 0.16s var(--ease);
+}
+.stage-chip:hover {
+  transform: scale(1.02);
+}
+.stage-chip:active {
+  transform: scale(0.97);
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage-chip:hover,
+  .stage-chip:active {
+    transform: none;
+  }
+}
+
