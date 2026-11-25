@@ -38,9 +38,10 @@ const showPassword = ref(false)
 const loading = ref(false)
 const errorText = ref('')
 
+const initialAccount = typeof route.query.account === 'string' ? route.query.account : ''
 const model = reactive({
-  account: 'admin',
-  password: '123',
+  account: initialAccount || 'admin',
+  password: initialAccount ? '' : '123',
   remember: true
 })
 
@@ -84,6 +85,10 @@ async function submit(): Promise<void> {
 
 function forgot(): void {
   toast('演示环境请在代码中重置本地账号，或联系系统管理员', 'info', 2600)
+}
+
+function goRegister(): void {
+  router.push('/register')
 }
 </script>
 
@@ -260,6 +265,11 @@ function forgot(): void {
             {{ loading ? '登录中…' : '登录' }}
           </Button>
         </form>
+
+        <p class="mt-4 text-center text-[12px] text-login-ink">
+          还没有账号？
+          <button type="button" class="auth-link" @click="goRegister">立即注册</button>
+        </p>
       </div>
     </section>
   </div>

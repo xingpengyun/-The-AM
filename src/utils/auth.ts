@@ -13,6 +13,8 @@
  *   3. 路由守卫、登录页、退出登录都通过本模块访问登录态，无需改动。
  */
 
+import type { DepartmentKey } from '@/types/domain'
+
 const ACCOUNT_KEY = 'bonbon.accounts.v1'
 const SESSION_KEY = 'bonbon.session.v1'
 const GUARD_KEY = 'bonbon.login-guard.v1'
@@ -32,6 +34,14 @@ const SESSION_TTL_REMEMBER_MS = 7 * 24 * 60 * 60 * 1000
 
 export const DEFAULT_USERNAME = 'admin'
 export const DEFAULT_DISPLAY_NAME = '邢鹏昀'
+
+/* 注册校验规则：手机号即账号，密码最短 6 位 */
+export const PHONE_RE = /^1[3-9]\d{9}$/
+export const MIN_PASSWORD_LENGTH = 6
+
+export type AccountRole = 'admin' | 'staff'
+export type AccountPermission = 'pending' | 'active' | 'disabled'
+export type Gender = 'male' | 'female'
 /*
  * 初始密码刻意设为极短的 123，仅用于演示与内部试用：泄露风险极高，
  * 首次登录必须通过引导修改；生产环境不存在默认密码，账号由后端下发。
@@ -41,12 +51,41 @@ export const DEFAULT_PASSWORD = '123'
 export interface StoredAccount {
   username: string
   displayName: string
-  role: 'admin' | 'staff'
+  role: AccountRole
   salt: string
   hash: string
   iterations: number
   createdAt: string
   updatedAt: string
+  /* 以下字段由自助注册写入；管理员账号可以没有 */
+  phone?: string
+  department?: DepartmentKey
+  gender?: Gender
+  permission?: AccountPermission
+  /* 可查看部门；缺省表示不限制（历史账号） */
+  departments?: DepartmentKey[]
+}
+
+/* 对外安全视图：不暴露 salt / hash */
+export interface AccountSummary {
+  username: string
+  displayName: string
+  role: AccountRole
+  phone?: string
+  department?: DepartmentKey
+  gender?: Gender
+  permission: AccountPermission
+  departments?: DepartmentKey[]
+  createdAt: string
+  updatedAt: string
+}
+
+export interface RegisterInput {
+  name: string
+  phone: string
+  password: string
+  department: DepartmentKey
+  gender: Gender
 }
 
 export interface Session {
@@ -57,6 +96,8 @@ export interface Session {
   issuedAt: number
   expiresAt: number
   remember: boolean
+  /* 登录时快照的可查看部门；undefined 表示全部部门（管理员或未限制账号） */
+  departments?: DepartmentKey[]
 }
 
 export class AuthError extends Error {
@@ -116,24 +157,150 @@ function findAccount(username: string): StoredAccount | undefined {
   return readAccounts().find((a) => a.username.toLowerCase() === name)
 }
 
+function permissionOf(account: StoredAccount): AccountPermission {
+  /* 历史账号没有 permission 字段，视为已开通 */
+  return account.permission ?? 'active'
+}
+
+function toSummary(account: StoredAccount): AccountSummary {
+  return {
+    username: account.username,
+    displayName: account.displayName,
+    role: account.role,
+    phone: account.phone,
+    department: account.department,
+    gender: account.gender,
+    permission: permissionOf(account),
+    departments: account.departments ? [...account.departments] : undefined,
+    createdAt: account.createdAt,
+    updatedAt: account.updatedAt
+  }
+}
+
+/* 人员权限列表：管理员置顶，其次按待开通 → 已开通 → 已停用排序 */
+export function listAccounts(): AccountSummary[] {
+  const order: Record<AccountPermission, number> = { pending: 0, active: 1, disabled: 2 }
+  return readAccounts()
+    .map(toSummary)
+    .sort((a, b) => {
+      if (a.role !== b.role) return a.role === 'admin' ? -1 : 1
+      if (a.permission !== b.permission) return order[a.permission] - order[b.permission]
+      return b.createdAt.localeCompare(a.createdAt)
+    })
+}
+
+/* 自助注册：手机号即账号，默认待管理员开通 */
+export async function registerAccount(input: RegisterInput): Promise<AccountSummary> {
+  await ensureSeeded()
+  const name = input.name.trim()
+  const phone = input.phone.trim()
+  if (!name) throw new AuthError('请输入姓名')
+  if (name.length > 20) throw new AuthError('姓名不能超过 20 个字符')
+  if (!PHONE_RE.test(phone)) throw new AuthError('请输入正确的 11 位手机号')
+  if (input.password.length < MIN_PASSWORD_LENGTH) {
+    throw new AuthError(`密码至少 ${MIN_PASSWORD_LENGTH} 位`)
+  }
+  if (findAccount(phone)) throw new AuthError('该手机号已注册')
+
+  const saltBytes = new Uint8Array(SALT_BYTES)
+  crypto.getRandomValues(saltBytes)
+  const salt = toBase64(saltBytes)
+  const now = new Date().toISOString()
+  const account: StoredAccount = {
+    username: phone,
+    displayName: name,
+    role: 'staff',
+    salt,
+    hash: await deriveHash(input.password, salt, DEFAULT_ITERATIONS),
+    iterations: DEFAULT_ITERATIONS,
+    phone,
+    department: input.department,
+    gender: input.gender,
+    permission: 'pending',
+    departments: [input.department],
+    createdAt: now,
+    updatedAt: now
+  }
+  writeAccounts([...readAccounts(), account])
+  return toSummary(account)
+}
+
+/* 管理员开通 / 停用人员权限；管理员账号本身不允许修改 */
+export function setAccountPermission(
+  username: string,
+  permission: AccountPermission
+): AccountSummary {
+  const accounts = readAccounts()
+  const index = accounts.findIndex(
+    (a) => a.username.toLowerCase() === username.trim().toLowerCase()
+  )
+  if (index < 0) throw new AuthError('账号不存在')
+  if (accounts[index].role === 'admin') throw new AuthError('管理员账号权限不可修改')
+
+  const updated: StoredAccount = {
+    ...accounts[index],
+    permission,
+    updatedAt: new Date().toISOString()
+  }
+  accounts[index] = updated
+  writeAccounts(accounts)
+  return toSummary(updated)
+}
+
+/* 管理员设置账号的可查看部门；空数组表示不授权，直接拒绝保存 */
+export function updateAccountDepartments(
+  username: string,
+  departments: DepartmentKey[]
+): AccountSummary {
+  if (departments.length === 0) throw new AuthError('请至少选择一个部门')
+
+  const accounts = readAccounts()
+  const index = accounts.findIndex(
+    (a) => a.username.toLowerCase() === username.trim().toLowerCase()
+  )
+  if (index < 0) throw new AuthError('账号不存在')
+  if (accounts[index].role === 'admin') throw new AuthError('管理员默认拥有全部部门权限')
+
+  const updated: StoredAccount = {
+    ...accounts[index],
+    departments: [...new Set(departments)],
+    updatedAt: new Date().toISOString()
+  }
+  accounts[index] = updated
+  writeAccounts(accounts)
+  return toSummary(updated)
+}
+
 /* 首次使用时初始化默认账号（内部管理系统习惯：不开放自助注册） */
 export async function ensureSeeded(): Promise<void> {
   const accounts = readAccounts()
   if (accounts.length > 0) {
-    /* 兼容早期版本种下的旧显示名 */
     let dirty = false
+    let displayNameChanged = false
     const migrated = accounts.map((a) => {
-      if (a.username === DEFAULT_USERNAME && a.displayName === '运营管理员') {
+      let next = a
+      if (!next.permission) {
+        next = { ...next, permission: 'active' }
         dirty = true
-        return { ...a, displayName: DEFAULT_DISPLAY_NAME, updatedAt: new Date().toISOString() }
       }
-      return a
+      if (next.role === 'admin' && next.permission !== 'active') {
+        next = { ...next, permission: 'active' }
+        dirty = true
+      }
+      if (next.username === DEFAULT_USERNAME && next.displayName === '运营管理员') {
+        next = { ...next, displayName: DEFAULT_DISPLAY_NAME, updatedAt: new Date().toISOString() }
+        dirty = true
+        displayNameChanged = true
+      }
+      return next
     })
     if (dirty) {
       writeAccounts(migrated)
-      const session = getSession()
-      if (session && session.username === DEFAULT_USERNAME) {
-        persistSession({ ...session, displayName: DEFAULT_DISPLAY_NAME })
+      if (displayNameChanged) {
+        const session = getSession()
+        if (session && session.username === DEFAULT_USERNAME) {
+          persistSession({ ...session, displayName: DEFAULT_DISPLAY_NAME })
+        }
       }
     }
     return
@@ -149,6 +316,7 @@ export async function ensureSeeded(): Promise<void> {
     salt,
     hash: await deriveHash(DEFAULT_PASSWORD, salt, DEFAULT_ITERATIONS),
     iterations: DEFAULT_ITERATIONS,
+    permission: 'active',
     createdAt: now,
     updatedAt: now
   }
@@ -240,6 +408,11 @@ export async function login(
   }
 
   resetFailure(name)
+
+  const permission = permissionOf(account)
+  if (permission === 'pending') throw new AuthError('账号已注册，待管理员开通权限')
+  if (permission === 'disabled') throw new AuthError('账号权限已停用，请联系管理员')
+
   const now = Date.now()
   const session: Session = {
     token: randomToken(),
@@ -248,7 +421,11 @@ export async function login(
     role: account.role,
     issuedAt: now,
     expiresAt: now + (remember ? SESSION_TTL_REMEMBER_MS : SESSION_TTL_MS),
-    remember
+    remember,
+    departments:
+      account.role === 'admin' || !account.departments?.length
+        ? undefined
+        : [...account.departments]
   }
   persistSession(session)
   return session
@@ -263,7 +440,27 @@ export function getSession(): Session | null {
       clearSession()
       return null
     }
-    return session
+
+    /* 每次读取时与账号表对齐：管理员改权限 / 范围后，下一次导航立即生效 */
+    const account = findAccount(session.username)
+    if (!account) {
+      clearSession()
+      return null
+    }
+    if (account.role !== 'admin' && permissionOf(account) !== 'active') {
+      clearSession()
+      return null
+    }
+
+    return {
+      ...session,
+      role: account.role,
+      displayName: account.displayName,
+      departments:
+        account.role === 'admin' || !account.departments?.length
+          ? undefined
+          : [...account.departments]
+    }
   } catch {
     clearSession()
     return null

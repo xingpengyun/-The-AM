@@ -4,7 +4,11 @@ import DeptOverview from '@/views/DeptOverview.vue'
 import StageBoard from '@/views/StageBoard.vue'
 import DeptTodo from '@/views/DeptTodo.vue'
 import LoginView from '@/views/LoginView.vue'
-import { isLoggedIn } from '@/utils/auth'
+import RegisterView from '@/views/RegisterView.vue'
+import SettingsView from '@/views/SettingsView.vue'
+import PermissionsView from '@/views/PermissionsView.vue'
+import { getSession, isLoggedIn } from '@/utils/auth'
+import { toast } from '@/composables/useToast'
 import {
   defaultDepartmentKey,
   departmentByKey,
@@ -15,11 +19,19 @@ import {
 
 const routes: RouteRecordRaw[] = [
   { path: '/login', name: 'login', component: LoginView, meta: { public: true } },
+  { path: '/register', name: 'register', component: RegisterView, meta: { public: true } },
   { path: '/', redirect: '/home' },
   { path: '/home', name: 'home', component: DeptOverview, props: { global: true } },
   { path: '/dept/:dept', name: 'dept-overview', component: DeptOverview },
   { path: '/dept/:dept/stage/:stage', name: 'dept-stage', component: StageBoard },
   { path: '/dept/:dept/todo', name: 'dept-todo', component: DeptTodo },
+  { path: '/settings', name: 'settings', component: SettingsView },
+  {
+    path: '/settings/permissions',
+    name: 'settings-permissions',
+    component: PermissionsView,
+    meta: { admin: true }
+  },
   { path: '/:pathMatch(.*)*', redirect: '/home' }
 ]
 
@@ -39,6 +51,10 @@ router.beforeEach((to) => {
   if (to.meta.public === true && logged) {
     return { name: 'home' }
   }
+  if (to.meta.admin === true && getSession()?.role !== 'admin') {
+    toast('仅管理员可访问人员权限', 'warning')
+    return { name: 'home' }
+  }
   return true
 })
 
@@ -53,6 +69,22 @@ router.beforeEach((to) => {
   if (stage && !isStageKey(typeof stage === 'string' ? stage : '')) {
     return { name: 'dept-overview', params: { dept } }
   }
+
+  /* 可查看范围：受限账号只能进入授权部门，且不展示全局首页 */
+  const session = getSession()
+  const scope =
+    session && session.role !== 'admin' && session.departments?.length
+      ? session.departments.filter(isDepartmentKey)
+      : null
+  if (scope && scope.length > 0) {
+    if (to.name === 'home') {
+      return { name: 'dept-overview', params: { dept: scope[0] } }
+    }
+    if (deptKey && !scope.some((key) => key === deptKey)) {
+      toast('当前账号无权查看该部门', 'warning')
+      return { name: 'dept-overview', params: { dept: scope[0] } }
+    }
+  }
   return true
 })
 
@@ -63,6 +95,18 @@ router.afterEach((to) => {
   }
   if (to.name === 'home') {
     document.title = 'Bonbon Admin · 首页'
+    return
+  }
+  if (to.name === 'register') {
+    document.title = 'Bonbon Admin · 注册'
+    return
+  }
+  if (to.name === 'settings') {
+    document.title = 'Bonbon Admin · 设置'
+    return
+  }
+  if (to.name === 'settings-permissions') {
+    document.title = 'Bonbon Admin · 人员权限'
     return
   }
   const deptKey = typeof to.params.dept === 'string' ? to.params.dept : ''

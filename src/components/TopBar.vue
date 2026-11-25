@@ -21,6 +21,8 @@ const topSearch = ref('')
 const searchRef = ref<InstanceType<typeof Input> | null>(null)
 
 const isHome = computed(() => route.name === 'home')
+const isSettings = computed(() => route.path.startsWith('/settings'))
+const isPermissions = computed(() => route.name === 'settings-permissions')
 const dept = computed(() => departmentOfParam(route.params.dept))
 const stage = computed(() => stageOfParam(route.params.stage))
 
@@ -86,11 +88,25 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
     <div class="crumb">
       <nav class="flex items-center gap-1.5 text-[12px] text-muted-foreground" aria-label="面包屑">
         <a class="crumb-link" href="/home" @click.prevent="goHome">首页</a>
-        <template v-if="!isHome">
+        <template v-if="isSettings">
+          <span class="opacity-60">/</span>
+          <a
+            v-if="isPermissions"
+            class="crumb-link"
+            href="/settings"
+            @click.prevent="router.push('/settings')"
+          >设置</a>
+          <span v-else class="text-foreground">设置</span>
+          <template v-if="isPermissions">
+            <span class="opacity-60">/</span>
+            <span class="text-foreground">人员权限</span>
+          </template>
+        </template>
+        <template v-else-if="!isHome">
           <span class="opacity-60">/</span>
           <span class="text-foreground">{{ dept.name }}</span>
         </template>
-        <template v-if="!isHome && stage">
+        <template v-if="!isHome && !isSettings && stage">
           <span class="opacity-60">/</span>
           <span class="text-foreground">{{ stage.no }} {{ stage.name }}</span>
         </template>

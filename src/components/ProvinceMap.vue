@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { echarts, type EChartsCoreOption } from '@/lib/echarts'
 import Ico from '@/components/Ico.vue'
 import { toast } from '@/composables/useToast'
 import { fmtMoneyShort, fmtNum, provinceByShort, provinceStoreByShort } from '@/data/business'
 import { CHART_COLORS } from '@/lib/palette'
 import type { GeoCollection, MapState } from '@/types/domain'
+/* 直接打进包体，避免部署环境缺少 public 文件或返回 HTML 导致地图整块失败 */
+import chinaGeoRaw from '@/assets/china.json?raw'
 
 /* 城市纬度的中国地图比例，避免高纬度被纵向拉伸 */
 const CHINA_ASPECT_SCALE = Math.cos((35 * Math.PI) / 180)
@@ -290,11 +292,9 @@ function pointLatitude(point: unknown): number {
   return Number.NaN
 }
 
-async function loadGeo(): Promise<GeoCollection> {
-  const res = await fetch(`${import.meta.env.BASE_URL}map/china.json`)
-  if (!res.ok) throw new Error(`geo http ${res.status}`)
-  const geo = (await res.json()) as GeoCollection
-  if (!geo.features || !geo.features.length) throw new Error('geo empty')
+function loadGeo(): GeoCollection {
+  const geo = JSON.parse(chinaGeoRaw) as GeoCollection
+  if (!geo.features?.length) throw new Error('geo empty')
 
   /* 去掉南海诸岛要素，并剔除海南三沙等纬度低于 17.5° 的离岛，
      让主图包围盒只覆盖大陆与海南主岛，才能在卡片里上下居中 */
@@ -314,14 +314,22 @@ async function loadGeo(): Promise<GeoCollection> {
 async function initMap(): Promise<void> {
   mapState.value = 'loading'
   try {
-    const geo = await loadGeo()
-    echarts.registerMap(CHINA_MAP_NAME, geo as unknown as Parameters<typeof echarts.registerMap>[1])
-    if (!mapEl.value) return
-    chart = echarts.init(mapEl.value)
+    /* 等一帧，确保卡片在路由过渡/布局完成后有真实宽高 */
+    await nextTick()
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+
+    const el = mapEl.value
+    if (!el) return
+
+    echarts.registerMap(CHINA_MAP_NAME, loadGeo() as unknown as Parameters<typeof echarts.registerMap>[1])
+    /* HMR 或重复挂载时清掉旧实例，避免 canvas 叠加/初始化失败 */
+    echarts.getInstanceByDom(el)?.dispose()
+    chart = echarts.init(el)
     chart.setOption(buildOption())
     chart.on('click', onChartClick)
     resizeObserver = new ResizeObserver(() => chart?.resize())
-    resizeObserver.observe(mapEl.value)
+    resizeObserver.observe(el)
+    chart.resize()
     mapState.value = 'ready'
   } catch (err) {
     mapState.value = 'error'

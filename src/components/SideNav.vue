@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import Ico from '@/components/Ico.vue'
 import { Tooltip } from '@/components/ui/tooltip'
 import { departments, isDepartmentKey } from '@/data/org'
+import { getSession } from '@/utils/auth'
 import type { DepartmentKey } from '@/types/domain'
 
 const route = useRoute()
@@ -18,16 +19,32 @@ const pillPath =
   'M0 32A16 16 0 0 1 16 16H76A16 16 0 0 0 92 0V96A16 16 0 0 0 76 80H16A16 16 0 0 1 0 64Z'
 
 const isHome = computed(() => route.name === 'home')
+const isSettings = computed(() => route.path.startsWith('/settings'))
 const currentDeptKey = computed<DepartmentKey | null>(() => {
   const key = route.params.dept
   return isDepartmentKey(key) ? key : null
 })
 
-/* 选中项在导航里的序号：首页 0，部门从 1 开始；无选中时 -1 */
+/* 可查看部门：管理员或未限制账号返回 null（全部） */
+const allowedKeys = computed<Set<DepartmentKey> | null>(() => {
+  const session = getSession()
+  if (!session || session.role === 'admin' || !session.departments?.length) return null
+  const valid = session.departments.filter(isDepartmentKey)
+  return valid.length ? new Set(valid) : null
+})
+const visibleDepartments = computed(() =>
+  allowedKeys.value
+    ? departments.filter((d) => allowedKeys.value?.has(d.key))
+    : departments
+)
+const canSeeHome = computed(() => allowedKeys.value === null)
+
+/* 选中项在导航里的序号：受限账号没有首页，部门从 0 开始 */
 const activeIndex = computed(() => {
-  if (isHome.value) return 0
+  if (isHome.value) return canSeeHome.value ? 0 : -1
   if (!currentDeptKey.value) return -1
-  return departments.findIndex((d) => d.key === currentDeptKey.value) + 1
+  const index = visibleDepartments.value.findIndex((d) => d.key === currentDeptKey.value)
+  return index < 0 ? -1 : index + (canSeeHome.value ? 1 : 0)
 })
 
 /* 共享的选中胶囊：只保留一个元素，位置/尺寸随选中项变化做过渡 */
@@ -81,6 +98,12 @@ function goDept(key: DepartmentKey): void {
   router.push(`/dept/${key}`)
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
+
+function goSettings(): void {
+  if (isSettings.value) return
+  router.push('/settings')
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
 </script>
 
 <template>
@@ -105,7 +128,7 @@ function goDept(key: DepartmentKey): void {
           <path class="nav-pill-shape" :d="pillPath" />
         </svg>
 
-        <Tooltip content="首页" side="right" :delay="120">
+        <Tooltip v-if="canSeeHome" content="首页" side="right" :delay="120">
           <template #trigger>
             <button
               class="nav-item"
@@ -119,7 +142,7 @@ function goDept(key: DepartmentKey): void {
           </template>
         </Tooltip>
 
-        <Tooltip v-for="d in departments" :key="d.key" :content="d.name" side="right" :delay="120">
+        <Tooltip v-for="d in visibleDepartments" :key="d.key" :content="d.name" side="right" :delay="120">
           <template #trigger>
             <button
               class="nav-item"
@@ -134,5 +157,21 @@ function goDept(key: DepartmentKey): void {
         </Tooltip>
       </div>
     </nav>
+
+    <div class="aside-foot">
+      <Tooltip content="设置" side="right" :delay="120">
+        <template #trigger>
+          <button
+            class="rail-settings"
+            :class="{ active: isSettings }"
+            aria-label="设置"
+            :aria-current="isSettings ? 'page' : undefined"
+            @click="goSettings"
+          >
+            <Ico class="nav-ico" name="settings" :size="22" />
+          </button>
+        </template>
+      </Tooltip>
+    </div>
   </aside>
 </template>
