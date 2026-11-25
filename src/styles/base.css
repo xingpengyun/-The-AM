@@ -122,7 +122,7 @@ button { font-family: inherit; }
   z-index: 0; pointer-events: none;
 }
 .brand, .nav, .aside-foot { position: relative; z-index: 1; }
-.brand { display: flex; justify-content: center; padding: 22px 0 6px 8px; }
+.brand { display: flex; justify-content: center; padding: 22px 0 14px 8px; }
 
 .nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 14px 0 18px; }
 .nav::-webkit-scrollbar { width: 0; }

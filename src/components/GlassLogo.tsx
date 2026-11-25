@@ -19,7 +19,7 @@ const GLASS = {
   fov: 45,
   cameraZ: 4.5,
   planeZ: -2,
-  canvasSize: 88,
+  canvasSize: 112,
   cube: { size: 1.8, radius: 0.26, smoothness: 16 },
   /* 自转速度在慢速基础上提高约 40% */
   spin: { x: 0.15, y: 0.196, z: 0.12, zFreq: 0.28 },
@@ -43,9 +43,8 @@ const GLASS = {
   }
 } as const
 
-/* 折射内容：透明底白色「云阿蛮」，固定绘制在 logo 槽位内 */
+/* 折射内容：透明底「云阿蛮」，固定绘制在画布中心 */
 const TEXT = '云阿蛮'
-const TEXT_SLOT = { size: 60, insetX: 8, insetY: 14 }
 const TEXTURE_SIZE = 256
 const FONT_FAMILY = "'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', system-ui, sans-serif"
 
@@ -53,9 +52,6 @@ const VIEW_WIDTH = 2 * GLASS.cameraZ * Math.tan((GLASS.fov * Math.PI) / 360)
 const VIEW_HEIGHT = VIEW_WIDTH
 /* 方块轴对齐时投影最小，文字需按这个宽度收纳，避免转到正面时露出玻璃外 */
 const MIN_FACE_PX = (GLASS.cube.size / VIEW_HEIGHT) * GLASS.canvasSize
-/* 画布左移 8px，cube 投影左移 6px，让玻璃视觉中心与品牌位中心一致 */
-const CUBE_SHIFT_PX = 6
-const CUBE_SHIFT_X = -(CUBE_SHIFT_PX / GLASS.canvasSize) * VIEW_WIDTH
 
 /* 绘制横排文字贴图：等比适配槽位，保证不裁切 */
 function paintText(): HTMLCanvasElement {
@@ -65,11 +61,9 @@ function paintText(): HTMLCanvasElement {
   const ctx = canvas.getContext('2d')
   if (!ctx) return canvas
 
-  const slot = TEXTURE_SIZE * (TEXT_SLOT.size / GLASS.canvasSize)
-  const x = TEXTURE_SIZE * (TEXT_SLOT.insetX / GLASS.canvasSize)
-  const y = TEXTURE_SIZE * (TEXT_SLOT.insetY / GLASS.canvasSize)
-  /* 三字总宽限制在最小投影宽度的 86% 内，保证任何旋转角度都不会露到玻璃外 */
-  const maxWidth = TEXTURE_SIZE * ((MIN_FACE_PX * 0.86) / GLASS.canvasSize)
+  const center = TEXTURE_SIZE / 2
+  /* 三字总宽控制在最小投影宽度的 70%，保证折射放大后仍留安全边距 */
+  const maxWidth = TEXTURE_SIZE * ((MIN_FACE_PX * 0.7) / GLASS.canvasSize)
   let fontSize = maxWidth / TEXT.length
 
   ctx.font = `700 ${fontSize}px ${FONT_FAMILY}`
@@ -81,11 +75,11 @@ function paintText(): HTMLCanvasElement {
 
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  /* 统一品牌紫，三个字同色；辉光同色 */
-  ctx.fillStyle = '#8B5CF6'
-  ctx.shadowColor = 'rgba(139,92,246,.9)'
-  ctx.shadowBlur = slot * 0.035
-  ctx.fillText(TEXT, x + slot / 2, y + slot / 2 + fontSize * 0.02)
+  /* 取自参考图 #267C5F，三字同色；辉光沿用同色相 */
+  ctx.fillStyle = '#267C5F'
+  ctx.shadowColor = 'rgba(38,124,95,.9)'
+  ctx.shadowBlur = TEXTURE_SIZE * 0.024
+  ctx.fillText(TEXT, center, center + fontSize * 0.02)
   ctx.shadowBlur = 0
   return canvas
 }
@@ -154,7 +148,7 @@ function GlassScene() {
       <directionalLight position={[6, 8, 6]} intensity={0.45} />
       <directionalLight position={[0, 4, -8]} intensity={0.9} color="#d8e8ff" />
 
-      <group ref={groupRef} position={[CUBE_SHIFT_X, 0, 0]}>
+      <group ref={groupRef}>
         <RoundedBox
           args={[GLASS.cube.size, GLASS.cube.size, GLASS.cube.size]}
           radius={GLASS.cube.radius}

@@ -6,11 +6,11 @@
 }
 .glass-logo {
   position: absolute;
-  left: -8px;
+  left: -26px;
   top: 50%;
   display: block;
-  width: 88px;
-  height: 88px;
+  width: 112px;
+  height: 112px;
   transform: translateY(-50%);
   overflow: visible;
   pointer-events: none;
