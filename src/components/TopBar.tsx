@@ -5,6 +5,7 @@ import { DropdownMenu, type MenuItem } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Tooltip } from '@/components/ui/tooltip'
 import { toast } from '@/lib/toast'
+import { toggleTheme, useTheme } from '@/lib/theme'
 import { departmentOfParam, stageOfParam } from '@/data/org'
 import { getSession, logout } from '@/utils/auth'
 
@@ -19,6 +20,7 @@ function parseStageParam(pathname: string): string | undefined {
 export default function TopBar() {
   const location = useLocation()
   const navigate = useNavigate()
+  const theme = useTheme()
 
   /* 顶栏展示当前登录人（来自本地会话） */
   const session = getSession()
@@ -29,6 +31,7 @@ export default function TopBar() {
   const searchRef = useRef<HTMLInputElement | null>(null)
 
   const isHome = location.pathname === '/home'
+  const isOverview = location.pathname === '/overview'
   const isSettings = location.pathname.startsWith('/settings')
   const isPermissions = location.pathname === '/settings/permissions'
   const dept = departmentOfParam(parseDeptParam(location.pathname))
@@ -119,13 +122,18 @@ export default function TopBar() {
                 </>
               ) : null}
             </>
+          ) : isOverview ? (
+            <>
+              <span className="opacity-60">/</span>
+              <span className="text-foreground">总览</span>
+            </>
           ) : !isHome ? (
             <>
               <span className="opacity-60">/</span>
               <span className="text-foreground">{dept.name}</span>
             </>
           ) : null}
-          {!isHome && !isSettings && stage ? (
+          {!isHome && !isOverview && !isSettings && stage ? (
             <>
               <span className="opacity-60">/</span>
               <span className="text-foreground">{stage.no} {stage.name}</span>
@@ -152,6 +160,16 @@ export default function TopBar() {
       </div>
 
       <div className="top-actions">
+        <Tooltip content={theme === 'dark' ? '切换到浅色模式' : '切换到深色模式'}>
+          <button
+            className="icon-btn theme-toggle"
+            aria-label={theme === 'dark' ? '切换到浅色模式' : '切换到深色模式'}
+            onClick={toggleTheme}
+          >
+            <Ico name={theme === 'dark' ? 'sun' : 'moon'} size={17} />
+          </button>
+        </Tooltip>
+
         <Tooltip content="帮助中心">
           <button className="icon-btn" aria-label="帮助中心" onClick={() => notify('帮助中心为示例交互')}>
             <Ico name="help" size={17} />

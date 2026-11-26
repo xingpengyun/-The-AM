@@ -8,6 +8,7 @@ import PermissionsView from '@/views/PermissionsView'
 import DeptOverview from '@/views/DeptOverview'
 import DeptTodo from '@/views/DeptTodo'
 import StageBoard from '@/views/StageBoard'
+import OverviewView from '@/views/OverviewView'
 import { toast } from '@/lib/toast'
 import { getSession, isLoggedIn } from '@/utils/auth'
 import {
@@ -42,11 +43,20 @@ function PublicOnly({ children }: { children: ReactNode }) {
   return <>{children}</>
 }
 
-/* 首页：受限账号不展示全局首页，直接进入授权部门 */
-function HomeGuard() {
+/* 全局视图（首页 / 总览）：受限账号不展示，直接进入授权部门 */
+function GlobalGuard({ children }: { children: ReactNode }) {
   const scope = scopeOfSession()
   if (scope && scope.length > 0) return <Navigate to={`/dept/${scope[0]}`} replace />
-  return <DeptOverview global />
+  return <>{children}</>
+}
+
+/* 首页：受限账号不展示全局首页，直接进入授权部门 */
+function HomeGuard() {
+  return (
+    <GlobalGuard>
+      <DeptOverview global />
+    </GlobalGuard>
+  )
 }
 
 /* 人员权限：仅管理员可进入 */
@@ -96,6 +106,7 @@ export default function AppRoutes() {
         <Route element={<AppLayout />}>
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/home" element={<HomeGuard />} />
+          <Route path="/overview" element={<GlobalGuard><OverviewView /></GlobalGuard>} />
           <Route path="/dept/:dept" element={<DeptGuard><DeptOverview /></DeptGuard>} />
           <Route path="/dept/:dept/stage/:stage" element={<DeptGuard><StageBoard /></DeptGuard>} />
           <Route path="/dept/:dept/todo" element={<DeptGuard><DeptTodo /></DeptGuard>} />

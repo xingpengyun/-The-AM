@@ -10,6 +10,7 @@ import { directionOfPath } from '@/lib/route-order'
 function titleFor(pathname: string): string {
   if (pathname === '/login') return 'Bonbon Admin · 登录'
   if (pathname === '/home') return 'Bonbon Admin · 首页'
+  if (pathname === '/overview') return 'Bonbon Admin · 总览'
   if (pathname === '/register') return 'Bonbon Admin · 注册'
   if (pathname === '/settings') return 'Bonbon Admin · 设置'
   if (pathname === '/settings/permissions') return 'Bonbon Admin · 人员权限'
@@ -26,6 +27,8 @@ function titleFor(pathname: string): string {
 export default function AppLayout() {
   const location = useLocation()
   const isHome = location.pathname === '/home'
+  /* 总览与首页同属全局视图，不显示部门阶段轴 */
+  const isOverview = location.pathname === '/overview'
   /* 设置页不显示部门阶段轴 */
   const isSettings = location.pathname.startsWith('/settings')
   const direction = directionOfPath(location.pathname)
@@ -41,7 +44,7 @@ export default function AppLayout() {
       <SideNav />
       <div className="main">
         <TopBar />
-        {!isHome && !isSettings ? <StageAxis /> : null}
+        {!isHome && !isOverview && !isSettings ? <StageAxis /> : null}
         <main className="content">
           <div key={location.pathname} className={`page-enter page-${direction}`}>
             <Outlet />

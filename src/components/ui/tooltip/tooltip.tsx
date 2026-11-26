@@ -17,7 +17,7 @@ export function Tooltip({ content, side = 'top', delay = 200, children }: Toolti
           <TooltipPrimitive.Content
             side={side}
             sideOffset={8}
-            className="z-[120] rounded-lg bg-foreground px-2.5 py-1.5 text-[11px] font-medium text-white shadow-pop"
+            className="z-[120] rounded-lg bg-foreground px-2.5 py-1.5 text-[11px] font-medium text-background shadow-pop"
           >
             {content}
           </TooltipPrimitive.Content>

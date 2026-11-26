@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { echarts, type EChartsCoreOption } from '@/lib/echarts'
 import { CHART_COLORS, STATUS_COLORS } from '@/lib/palette'
+import { useTheme, type Theme } from '@/lib/theme'
 import { departmentOfParam } from '@/data/org'
 import {
   fmtNum,
@@ -70,7 +71,21 @@ const today = new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: '2-digi
 
 const axisPointerLabel = { backgroundColor: CHART_COLORS[0], borderRadius: 4, fontSize: 10 }
 
-function salesOption(): EChartsCoreOption {
+/* 图表里的浮层与空槽色：跟随主题，避免深色下白底/浅灰条刺眼 */
+function chartInk(theme: Theme) {
+  const dark = theme === 'dark'
+  return {
+    tooltipBg: dark ? 'rgba(24,24,27,.96)' : 'rgba(255,255,255,.98)',
+    tooltipBorder: dark ? 'rgba(255,255,255,.12)' : 'rgba(35,38,59,.10)',
+    tooltipShadow: dark ? 'rgba(0,0,0,.7)' : 'rgba(35,38,59,.45)',
+    tooltipInk: dark ? '#F4F4F5' : '#25334A',
+    tooltipMuted: dark ? '#9AA3AD' : '#7A8C95',
+    barIdle: dark ? '#3A3A45' : '#E4E4E7'
+  }
+}
+
+function salesOption(theme: Theme): EChartsCoreOption {
+  const ink = chartInk(theme)
   const max = Math.max(...monthlySales) * 1.12
   return {
     backgroundColor: 'transparent',
@@ -79,12 +94,12 @@ function salesOption(): EChartsCoreOption {
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(14,165,233,.06)' } },
-      backgroundColor: 'rgba(255,255,255,.98)',
-      borderColor: 'rgba(35,38,59,.10)',
+      backgroundColor: ink.tooltipBg,
+      borderColor: ink.tooltipBorder,
       borderWidth: 1,
       padding: [7, 10],
-      extraCssText: 'border-radius:8px;box-shadow:0 12px 26px -20px rgba(35,38,59,.45);',
-      textStyle: { color: '#25334A', fontSize: 10.5 },
+      extraCssText: `border-radius:8px;box-shadow:0 12px 26px -20px ${ink.tooltipShadow};`,
+      textStyle: { color: ink.tooltipInk, fontSize: 10.5 },
       formatter: (params: unknown) => {
         const list = params as { axisValue: string; value: number }[]
         return `${list[0].axisValue} · ¥${fmtNum(list[0].value)} 万`
@@ -99,7 +114,7 @@ function salesOption(): EChartsCoreOption {
         data: monthlySales.map((v, i) => ({
           value: v,
           itemStyle: {
-            color: i === monthlySales.length - 1 ? CHART_COLORS[0] : '#E4E4E7',
+            color: i === monthlySales.length - 1 ? CHART_COLORS[0] : ink.barIdle,
             borderRadius: [3, 3, 0, 0]
           }
         }))
@@ -133,7 +148,8 @@ function memberOption(): EChartsCoreOption {
   }
 }
 
-function trendOption(): EChartsCoreOption {
+function trendOption(theme: Theme): EChartsCoreOption {
+  const ink = chartInk(theme)
   return {
     backgroundColor: 'transparent',
     animationDuration: 800,
@@ -141,12 +157,12 @@ function trendOption(): EChartsCoreOption {
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'line', lineStyle: { color: 'rgba(14,165,233,.25)' }, label: axisPointerLabel },
-      backgroundColor: 'rgba(255,255,255,.98)',
-      borderColor: 'rgba(35,38,59,.10)',
+      backgroundColor: ink.tooltipBg,
+      borderColor: ink.tooltipBorder,
       borderWidth: 1,
       padding: [7, 10],
-      extraCssText: 'border-radius:8px;box-shadow:0 12px 26px -20px rgba(35,38,59,.45);',
-      textStyle: { color: '#25334A', fontSize: 10.5 },
+      extraCssText: `border-radius:8px;box-shadow:0 12px 26px -20px ${ink.tooltipShadow};`,
+      textStyle: { color: ink.tooltipInk, fontSize: 10.5 },
       formatter: (params: unknown) => {
         const list = params as { axisValue: string; seriesName: string; value: number }[]
         const head = `<div style="font-weight:700;margin-bottom:3px;">${list[0].axisValue}</div>`
@@ -156,7 +172,7 @@ function trendOption(): EChartsCoreOption {
             .map(
               (p) =>
                 `<div style="display:flex;justify-content:space-between;gap:14px;">` +
-                `<span style="color:#7A8C95;">${p.seriesName}</span><b>${p.value}</b></div>`
+                `<span style="color:${ink.tooltipMuted};">${p.seriesName}</span><b>${p.value}</b></div>`
             )
             .join('')
         )
@@ -198,6 +214,7 @@ export interface DeptOverviewProps {
 export default function DeptOverview({ global = false }: DeptOverviewProps) {
   const location = useLocation()
   const { dept: deptParam } = useParams()
+  const theme = useTheme()
 
   /* 首页 = 跨部门全局视图；部门页只保留空壳，等待业务接入 */
   const isGlobal = global || location.pathname === '/home'
@@ -247,9 +264,9 @@ export default function DeptOverview({ global = false }: DeptOverviewProps) {
     let raf2 = 0
     const raf1 = requestAnimationFrame(() => {
       raf2 = requestAnimationFrame(() => {
-        mountChart(salesEl.current, salesOption())
+        mountChart(salesEl.current, salesOption(theme))
         mountChart(memberEl.current, memberOption())
-        mountChart(trendEl.current, trendOption())
+        mountChart(trendEl.current, trendOption(theme))
       })
     })
 
@@ -262,7 +279,7 @@ export default function DeptOverview({ global = false }: DeptOverviewProps) {
       charts.forEach((c) => c.dispose())
       charts.length = 0
     }
-  }, [isGlobal])
+  }, [isGlobal, theme])
 
   return (
     <div className="page-dense home-page">

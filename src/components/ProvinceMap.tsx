@@ -4,6 +4,7 @@ import Ico from '@/components/Ico'
 import { toast } from '@/lib/toast'
 import { fmtMoneyShort, fmtNum, provinceByShort, provinceStoreByShort } from '@/data/business'
 import { CHART_COLORS } from '@/lib/palette'
+import { useTheme, type Theme } from '@/lib/theme'
 import type { GeoCollection, MapState } from '@/types/domain'
 /* 直接打进包体，避免部署环境缺少 public 文件或返回 HTML 导致地图整块失败 */
 import chinaGeoRaw from '@/assets/china.json?raw'
@@ -174,22 +175,69 @@ const provinceCount = nodes.length
 const hubCount = nodes.filter((n) => n.role === 'hub').length
 const routeCount = edges.length
 
-function metricRow(label: string, value: string, active: boolean, color: string): string {
+function metricRow(
+  label: string,
+  value: string,
+  active: boolean,
+  color: string,
+  muted: string,
+  strong: string
+): string {
   return (
-    `<div style="display:flex;justify-content:space-between;gap:16px;margin-top:3px;font-size:10.5px;color:#7A8C95;">` +
+    `<div style="display:flex;justify-content:space-between;gap:16px;margin-top:3px;font-size:10.5px;color:${muted};">` +
     `<span>${label}</span>` +
-    `<b style="color:${active ? color : '#334155'};font-variant-numeric:tabular-nums;">${value}</b></div>`
+    `<b style="color:${active ? color : strong};font-variant-numeric:tabular-nums;">${value}</b></div>`
   )
 }
 
-function tooltipHtml(metric: MetricKey, params: { dataType?: string; data?: unknown }): string {
+interface MapInk {
+  tooltipBg: string
+  tooltipBorder: string
+  tooltipShadow: string
+  muted: string
+  strong: string
+  area: string
+  border: string
+  shadow: string
+  emphasisArea: string
+  emphasisBorder: string
+  emphasisLabel: string
+  mapLabel: string
+  nodeBorder: string
+}
+
+/* 地图配色：深色下压暗陆块、提亮描边与文字，保证省级标签可读 */
+function mapInk(theme: Theme): MapInk {
+  const dark = theme === 'dark'
+  return {
+    tooltipBg: dark ? 'rgba(24,24,27,.96)' : 'rgba(255,255,255,.98)',
+    tooltipBorder: dark ? 'rgba(255,255,255,.12)' : 'rgba(24,24,27,.10)',
+    tooltipShadow: dark ? 'rgba(0,0,0,.7)' : 'rgba(24,24,27,.35)',
+    muted: dark ? '#9AA3AD' : '#7A8C95',
+    strong: dark ? '#D6DEE6' : '#334155',
+    area: dark ? '#151A21' : '#F7FBFC',
+    border: dark ? '#2B3540' : '#DCE8ED',
+    shadow: dark ? 'rgba(0,0,0,.55)' : 'rgba(24,24,27,.08)',
+    emphasisArea: dark ? '#1E2B38' : '#E8F4F9',
+    emphasisBorder: dark ? '#3E6B85' : '#B8D9E6',
+    emphasisLabel: dark ? '#7DD3FC' : '#0369A1',
+    mapLabel: dark ? '#8B98A6' : '#7A8C99',
+    nodeBorder: dark ? '#0B0B0E' : '#FFFFFF'
+  }
+}
+
+function tooltipHtml(
+  metric: MetricKey,
+  params: { dataType?: string; data?: unknown },
+  ink: MapInk
+): string {
   if (params.dataType === 'edge') {
     const edge = params.data as SupplyEdge
     return (
       `<div style="display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;">` +
       `<i style="width:5px;height:5px;border-radius:99px;background:${edge.lineStyle.color};"></i>` +
       `${edge.source} → ${edge.target}</div>` +
-      `<div style="margin-top:4px;font-size:10.5px;color:#7A8C95;">供应链线路</div>`
+      `<div style="margin-top:4px;font-size:10.5px;color:${ink.muted};">供应链线路</div>`
     )
   }
   const node = params.data as ProvinceNode
@@ -197,15 +245,16 @@ function tooltipHtml(metric: MetricKey, params: { dataType?: string; data?: unkn
   return (
     `<div style="display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;">` +
     `<i style="width:5px;height:5px;border-radius:99px;background:${node.color};"></i>${node.province}</div>` +
-    `<div style="display:flex;justify-content:space-between;gap:16px;margin-top:5px;font-size:10.5px;color:#7A8C95;">` +
-    `<span>省会 / 角色</span><b style="color:#334155;">${node.city} · ${roleText}</b></div>` +
-    metricRow('门店数', `${fmtNum(node.stores)} 家`, metric === 'stores', node.color) +
-    metricRow('订单量', `${fmtNum(node.orders)} 单`, metric === 'orders', node.color) +
-    metricRow('营收', fmtMoneyShort(node.amount), metric === 'amount', node.color)
+    `<div style="display:flex;justify-content:space-between;gap:16px;margin-top:5px;font-size:10.5px;color:${ink.muted};">` +
+    `<span>省会 / 角色</span><b style="color:${ink.strong};">${node.city} · ${roleText}</b></div>` +
+    metricRow('门店数', `${fmtNum(node.stores)} 家`, metric === 'stores', node.color, ink.muted, ink.strong) +
+    metricRow('订单量', `${fmtNum(node.orders)} 单`, metric === 'orders', node.color, ink.muted, ink.strong) +
+    metricRow('营收', fmtMoneyShort(node.amount), metric === 'amount', node.color, ink.muted, ink.strong)
   )
 }
 
-function buildOption(getMetric: () => MetricKey): EChartsCoreOption {
+function buildOption(getMetric: () => MetricKey, theme: Theme): EChartsCoreOption {
+  const ink = mapInk(theme)
   return {
     backgroundColor: 'transparent',
     animationDuration: 600,
@@ -214,11 +263,12 @@ function buildOption(getMetric: () => MetricKey): EChartsCoreOption {
       trigger: 'item',
       confine: true,
       padding: [9, 11],
-      backgroundColor: 'rgba(255,255,255,.98)',
-      borderColor: 'rgba(24,24,27,.10)',
+      backgroundColor: ink.tooltipBg,
+      borderColor: ink.tooltipBorder,
       borderWidth: 1,
-      extraCssText: 'border-radius:9px;box-shadow:0 16px 32px -24px rgba(24,24,27,.35);',
-      formatter: (params: { dataType?: string; data?: unknown }) => tooltipHtml(getMetric(), params)
+      extraCssText: `border-radius:9px;box-shadow:0 16px 32px -24px ${ink.tooltipShadow};`,
+      formatter: (params: { dataType?: string; data?: unknown }) =>
+        tooltipHtml(getMetric(), params, ink)
     },
     geo: {
       map: CHINA_MAP_NAME,
@@ -227,18 +277,18 @@ function buildOption(getMetric: () => MetricKey): EChartsCoreOption {
       layoutCenter: ['50%', '50%'],
       layoutSize: '106%',
       itemStyle: {
-        areaColor: '#F7FBFC',
-        borderColor: '#DCE8ED',
+        areaColor: ink.area,
+        borderColor: ink.border,
         borderWidth: 0.8,
-        shadowColor: 'rgba(24,24,27,.08)',
+        shadowColor: ink.shadow,
         shadowBlur: 12
       },
       emphasis: {
-        itemStyle: { areaColor: '#E8F4F9', borderColor: '#B8D9E6' },
-        label: { color: '#0369A1' }
+        itemStyle: { areaColor: ink.emphasisArea, borderColor: ink.emphasisBorder },
+        label: { color: ink.emphasisLabel }
       },
       select: { disabled: true },
-      label: { show: true, color: '#7A8C99', fontSize: 9.5 }
+      label: { show: true, color: ink.mapLabel, fontSize: 9.5 }
     },
     series: [
       {
@@ -249,11 +299,14 @@ function buildOption(getMetric: () => MetricKey): EChartsCoreOption {
         label: { show: false },
         emphasis: {
           scale: 1.3,
-          label: { show: true, color: '#0369A1', fontSize: 10, fontWeight: 600 }
+          label: { show: true, color: ink.emphasisLabel, fontSize: 10, fontWeight: 600 }
         },
         edgeSymbol: ['none', 'arrow'],
         edgeSymbolSize: 5,
-        data: nodes,
+        data: nodes.map((node) => ({
+          ...node,
+          itemStyle: { ...node.itemStyle, borderColor: ink.nodeBorder }
+        })),
         edges
       }
     ]
@@ -319,6 +372,7 @@ export default function ProvinceMap() {
   const mapEl = useRef<HTMLDivElement | null>(null)
   const chartRef = useRef<ReturnType<typeof echarts.init> | null>(null)
   const resizeObserverRef = useRef<ResizeObserver | null>(null)
+  const theme = useTheme()
   const [mapState, setMapState] = useState<MapState>('loading')
   const [mapError, setMapError] = useState('')
   const [metric, setMetric] = useState<MetricKey>('stores')
@@ -349,7 +403,7 @@ export default function ProvinceMap() {
         echarts.getInstanceByDom(el)?.dispose()
         const instance = echarts.init(el)
         chartRef.current = instance
-        instance.setOption(buildOption(() => metricRef.current))
+        instance.setOption(buildOption(() => metricRef.current, theme))
         instance.on('click', onChartClick)
 
         const observer = new ResizeObserver(() => instance.resize())
@@ -373,7 +427,7 @@ export default function ProvinceMap() {
       chartRef.current?.dispose()
       chartRef.current = null
     }
-  }, [])
+  }, [theme])
 
   const metricTotalText =
     metric === 'stores'
