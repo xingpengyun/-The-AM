@@ -63,7 +63,35 @@ export function setTheme(next: Theme): void {
 }
 
 export function toggleTheme(): void {
-  setTheme(current === 'dark' ? 'light' : 'dark')
+  const next: Theme = current === 'dark' ? 'light' : 'dark'
+
+  /* 不支持 View Transitions 或用户偏好减少动效时，直接切换 */
+  const doc = document as Document & {
+    startViewTransition?: (callback: () => void) => {
+      finished: Promise<void>
+    }
+  }
+  if (!doc.startViewTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    setTheme(next)
+    return
+  }
+
+  /* 动效原点取主题按钮中心，旧画面向该点收拢 */
+  const rect = document.querySelector<HTMLElement>('.theme-toggle')?.getBoundingClientRect()
+  const root = document.documentElement
+  root.style.setProperty('--theme-origin-x', `${rect ? rect.left + rect.width / 2 : window.innerWidth - 48}px`)
+  root.style.setProperty('--theme-origin-y', `${rect ? rect.top + rect.height / 2 : 36}px`)
+  root.classList.add('theme-switching')
+
+  try {
+    const transition = doc.startViewTransition(() => setTheme(next))
+    void transition.finished
+      .catch(() => {})
+      .finally(() => root.classList.remove('theme-switching'))
+  } catch {
+    root.classList.remove('theme-switching')
+    setTheme(next)
+  }
 }
 
 function subscribe(listener: () => void): () => void {
