@@ -13,7 +13,8 @@
 /* ------------------------------ 导航选中胶囊 ------------------------------ */
 /* 选中块填充 = 主界面底色 --paper，不写死色值 */
 .nav-pill-shape {
-  fill: var(--nav-pill-bg);
+  /* 必须与页面底色同色，右侧缺口才能与内容区无缝相接（深色主题下尤其明显） */
+  fill: var(--paper);
 }
 
 /* ------------------------------ 首页入口 ------------------------------ */
@@ -374,32 +375,47 @@
     0 6px 18px -12px rgba(24, 24, 27, 0.12);
 }
 
-/* 卡片外沿流光：一条等宽单色描边沿轮廓滑动，无外发光、无底轨 */
-.auth-beam {
+/* 卡片外沿流光：灰阶底轨 + 锥形渐变光带沿轮廓扫动（蓝 → 紫 → 粉） */
+.auth-beam-track,
+.auth-beam-glow {
   position: absolute;
-  inset: -1px;
-  width: calc(100% + 2px);
-  height: calc(100% + 2px);
-  overflow: visible;
+  inset: 0;
+  border-radius: inherit;
   pointer-events: none;
+  /* 只保留描边区域：两层遮罩做异或，抠掉内部 */
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
 }
-.auth-beam__line {
-  fill: none;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-dasharray: 12 88;
-  stroke-dashoffset: 0;
-  animation: beam-slide 7s linear infinite;
-  will-change: stroke-dashoffset;
+.auth-beam-track {
+  padding: 1px;
+  background: rgba(24, 24, 27, 0.22);
 }
-@keyframes beam-slide {
-  from { stroke-dashoffset: 0; }
-  to { stroke-dashoffset: -100; }
+.auth-beam-glow {
+  padding: 2px;
+  background: conic-gradient(
+    from var(--beam-angle),
+    rgba(47, 84, 235, 0) 0deg,
+    rgba(47, 84, 235, 0) 292deg,
+    #2f54eb 300deg,
+    #722ed1 326deg,
+    #ff85c0 356deg,
+    rgba(255, 133, 192, 0) 360deg
+  );
+  animation: beam-sweep 5.2s linear infinite;
+}
+@property --beam-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes beam-sweep {
+  from { --beam-angle: 0deg; }
+  to { --beam-angle: 360deg; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .auth-beam__line {
-    animation: none;
-  }
+  .auth-beam-glow { animation: none; }
 }
 /* 不支持 backdrop-filter：退化为浅灰实底，深色文字仍清晰 */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {

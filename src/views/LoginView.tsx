@@ -12,8 +12,7 @@ import { ensureSeeded, login } from '@/utils/auth'
 /* Vue Bits 官方 HoloMosaic（WebGL2）按需加载，避免进入首屏 chunk */
 const HoloMosaic = lazy(() => import('@/components/HoloMosaic'))
 
-/* 默认 vivid 极光：紫 → 青 → 浅青，跨度更大 */
-const BEAM_STOPS: [string, string, string] = ['#7c3aed', '#06b6d4', '#67e8f9']
+/* 光带色标：蓝 → 紫 → 粉（0% / 44% / 100%），定义在 extra.css 的锥形渐变中 */
 
 /* 玻璃卡里的输入框：颜色全部走 Tailwind 令牌，不外露色值 */
 const fieldClass =
@@ -180,26 +179,9 @@ export default function LoginView() {
       {/* 登录卡片：相对整个视口居中 */}
       <section className="auth-panel">
         <div className="auth-card">
-          {/* 外沿流光：单条等宽描边，颜色由沿光束方向的三段色标渐变承载 */}
-          <svg className="auth-beam" aria-hidden="true" focusable="false">
-            <defs>
-              <linearGradient id="authBeamGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor={BEAM_STOPS[0]} />
-                <stop offset="50%" stopColor={BEAM_STOPS[1]} />
-                <stop offset="100%" stopColor={BEAM_STOPS[2]} />
-              </linearGradient>
-            </defs>
-            <rect
-              className="auth-beam__line"
-              x="0"
-              y="0"
-              width="100%"
-              height="100%"
-              rx="26"
-              pathLength="100"
-              stroke="url(#authBeamGradient)"
-            />
-          </svg>
+          {/* 外沿流光：灰阶底轨 + 一段蓝紫粉渐变光带沿轮廓扫动 */}
+          <div className="auth-beam-track" aria-hidden="true" />
+          <div className="auth-beam-glow" aria-hidden="true" />
 
           <div className="login-eyes">
             <EyeRobot />
